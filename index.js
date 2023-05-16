@@ -6,7 +6,8 @@ const sleep = require('./src/functions/utilities/sleep'),
     checkUpdate = require("./src/functions/private/checkUpdates"),
     AutoThreadJoiner = require("./src/functions/auto/thread"),
     discordTimestamp = require("./src/functions/utilities/timeStamp"),
-    splitMessageRegex = require("./src/functions/utilities/splitMessageRegex");
+    splitMessageRegex = require("./src/functions/utilities/splitMessageRegex"),
+    cleanCode = require("./src/functions/utilities/cleanCode");
 
 
 checkUpdate()
@@ -16,5 +17,6 @@ module.exports = {
     passGen,
     AutoThreadJoiner,
     discordTimestamp,
-    splitMessageRegex
+    splitMessageRegex,
+    cleanCode
 };

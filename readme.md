@@ -8,8 +8,9 @@ For your discord utilities
   - [Sleep](#sleep)
   - [passGen](#passgen)
   - [AutoThreadJoiner](#autothreadjoiner)
-  - [Discord Timestamp](#discord-timestamp)
   - [Clean Code](#clean-code)
+  - [Split MessageRegex](#split-messageregex)
+  - [Discord Timestamp](#discord-timestamp)
 - [Contributing](#contributing)
 - [License](#license)
 - [Credits](#credits)
@@ -68,25 +69,19 @@ For your discord utilities
   const { AutoThreadJoiner } = require('visa2discord');
   AutoThreadJoiner(client) // Automatically join threads
   ```
-## Discord Timestamp
-- The `discordTimestamp` function is used to generate a discord timestamp.
+## Clean Code
+- The `cleanCode` function is used to escape mentions and codeblocks in a given text string.
 - Usage
   ```js
-  const { discordTimestamp } = require('visa2discord');
-  const time = Date.now(); // Current time
-  const type = 'f'; // type of timestamp
-
-  const timestamp = discordTimestamp(time, type);
-  console.log('Discord timestamp:', timestamp);
--  Here are the types to use and their outputs on Discord:
-`d` => 03/05/2023
-`D` => March 5, 2023
-`t` => 2:22 PM
-`T` => 2:22:00 PM
-`f` => March 5, 2023 2:22 PM
-`F` => Sunday, March 5, 2023 2:22 PM
-`R` => A minute ago
-
+  const { cleanCode } = require('visa2discord');
+  const code = 'const message = "Hello, this is a test message."';
+  const cleanedCode = cleanCode(code);
+  console.log('Cleaned code:', cleanedCode);
+  ```
+- Example output
+  ```
+  Cleaned code: const message = "Hello, this is a test message."
+  ```
 ## Split MessageRegex
 - The `splitMessageRegex` function is used to split a message into multiple messages to avoid the 2000 character limit by Discord.
 - Parameters
@@ -112,27 +107,30 @@ For your discord utilities
   console.log('Message parts:', parts);
   ```
 - Example output
-  ```
+  ```json
     Message parts: [
     '```This is a long message that needs to be split into multiple parts.```',
     '```It contains multiple lines and exceeds the maximum message length.```'
     ]
-
   ```
-## Clean Code
-- The `cleanCode` function is used to escape mentions and codeblocks in a given text string.
+## Discord Timestamp
+- The `discordTimestamp` function is used to generate a discord timestamp.
 - Usage
   ```js
-  const { cleanCode } = require('visa2discord');
-  const code = 'const message = "Hello, this is a test message."';
-  const cleanedCode = cleanCode(code);
-  console.log('Cleaned code:', cleanedCode);
-  ```
-- Example output
-  ```
-  Cleaned code: const message = "Hello, this is a test message."
-  ```
+  const { discordTimestamp } = require('visa2discord');
+  const time = Date.now(); // Current time
+  const type = 'f'; // type of timestamp
 
+  const timestamp = discordTimestamp(time, type);
+  console.log('Discord timestamp:', timestamp);
+-  Here are the types to use and their outputs on Discord:
+  - `d` => 03/05/2023
+  - `D` => March 5, 2023
+  - `t` => 2:22 PM
+  - `T` => 2:22:00 PM
+  - `f` => March 5, 2023 2:22 PM
+  - `F` => Sunday, March 5, 2023 2:22 PM
+  - `R` => A minute ago
   # Contributing
   - If you want to contribute to this project, you can fork this repository and make a pull request.
   - If you want to report a bug, you can create an issue.
