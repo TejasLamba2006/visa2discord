@@ -9,6 +9,7 @@ For your discord utilities
   - [passGen](#passgen)
   - [AutoThreadJoiner](#autothreadjoiner)
   - [Discord Timestamp](#discord-timestamp)
+  - [Clean Code](#clean-code)
 - [Contributing](#contributing)
 - [License](#license)
 - [Credits](#credits)
@@ -85,6 +86,52 @@ For your discord utilities
 `f` => March 5, 2023 2:22 PM
 `F` => Sunday, March 5, 2023 2:22 PM
 `R` => A minute ago
+
+## Split MessageRegex
+- The `splitMessageRegex` function is used to split a message into multiple messages to avoid the 2000 character limit by Discord.
+- Parameters
+  - `text`: The message to split into parts.
+  - options (`optional`): An object containing the following properties:
+      - `maxLength`: The maximum length of each part (default: `2000`).
+      - `regex`: The regular expression to use as the delimiter (default: `/\n/g`).
+      - `prepend`: The string to prepend to each part (default: `''`).
+      - `append`: The string to append to each part (default: `''`).
+- Usage
+  ```js
+  const { splitMessageRegex } = require('visa2discord');
+
+  const message = `This is a long message that needs to be split into multiple parts.\nIt contains multiple lines and exceeds the maximum message length.`;
+
+  const parts = splitMessageRegex(message, {
+    maxLength: 50,
+    regex: /\n/g,
+    prepend: '```',
+    append: '```'
+  });
+
+  console.log('Message parts:', parts);
+  ```
+- Example output
+  ```
+    Message parts: [
+    '```This is a long message that needs to be split into multiple parts.```',
+    '```It contains multiple lines and exceeds the maximum message length.```'
+    ]
+
+  ```
+## Clean Code
+- The `cleanCode` function is used to escape mentions and codeblocks in a given text string.
+- Usage
+  ```js
+  const { cleanCode } = require('visa2discord');
+  const code = 'const message = "Hello, this is a test message."';
+  const cleanedCode = cleanCode(code);
+  console.log('Cleaned code:', cleanedCode);
+  ```
+- Example output
+  ```
+  Cleaned code: const message = "Hello, this is a test message."
+  ```
 
   # Contributing
   - If you want to contribute to this project, you can fork this repository and make a pull request.
