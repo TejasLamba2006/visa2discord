@@ -8,7 +8,7 @@ module.exports = async () => {
     }
     
     // @ts-ignore
-    const packageData = await require('node-fetch')(`https://registry.npmjs.com/visa2iscord`).then(text => text.json())
+    const packageData = await require('node-fetch')(`https://registry.npmjs.com/visa2discord`).then(text => text.json())
     // @ts-ignore
     if (require('../../../package.json').version !== packageData['dist-tags'].latest) {
     const change = `${require('../../../package.json').version} --> ${packageData['dist-tags'].latest}`
