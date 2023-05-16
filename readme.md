@@ -72,10 +72,10 @@ For your discord utilities
 - Usage
   ```js
   const { discordTimestamp } = require('visa2discord');
-  const timestamp = Date.now(); // Current time
+  const time = Date.now(); // Current time
   const type = 'f'; // type of timestamp
 
-  const timestamp = discordTimestamp(timestamp, type);
+  const timestamp = discordTimestamp(time, type);
   console.log('Discord timestamp:', timestamp);
 -  Here are the types to use and their outputs on Discord:
 `d` => 03/05/2023
