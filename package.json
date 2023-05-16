@@ -1,0 +1,28 @@
+{
+  "name": "visa2discord",
+  "version": "1.0.9",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "discord.js": "^12.5.3",
+    "node-fetch": "^2.6.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "./test/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/The-Rainbow-Studios/visa2discord.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/The-Rainbow-Studios/visa2discord/issues"
+  },
+  "homepage": "https://github.com/The-Rainbow-Studios/visa2discord#readme"
+}
