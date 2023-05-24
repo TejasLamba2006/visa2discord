@@ -1,13 +1,13 @@
 {
   "name": "visa2discord",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "A package for your discord needs",
   "main": "index.js",
   "directories": {
     "test": "test"
   },
   "dependencies": {
-    "discord.js": "^12.5.3",
+    "discord.js": "^14.11.0",
     "node-fetch": "^2.6.1"
   },
   "devDependencies": {},
