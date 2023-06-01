@@ -1,6 +1,6 @@
 {
   "name": "visa2discord",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "A package for your discord needs",
   "main": "index.js",
   "directories": {
@@ -19,7 +19,7 @@
     "url": "git+https://github.com/The-Rainbow-Studios/visa2discord.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "TejasLamba2006",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/The-Rainbow-Studios/visa2discord/issues"

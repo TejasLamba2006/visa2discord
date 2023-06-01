@@ -1,4 +1,8 @@
 const Discord = require("discord.js");
+/**
+ * 
+ * @param {Object} client | Discord client object
+ */
 module.exports = async (client) => {
   client.on("threadCreate", async (thread) => {
     if (thread.type === Discord.ChannelType.PublicThread) {

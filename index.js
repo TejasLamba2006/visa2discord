@@ -7,7 +7,8 @@ const sleep = require('./src/functions/utilities/sleep'),
     AutoThreadJoiner = require("./src/functions/auto/thread"),
     discordTimestamp = require("./src/functions/utilities/timeStamp"),
     splitMessageRegex = require("./src/functions/utilities/splitMessageRegex"),
-    cleanCode = require("./src/functions/utilities/cleanCode");
+    cleanCode = require("./src/functions/utilities/cleanCode"),
+    generateActivity = require("./src/functions/utilities/generateActivity");
 
 
 checkUpdate()
@@ -18,5 +19,6 @@ module.exports = {
     AutoThreadJoiner,
     discordTimestamp,
     splitMessageRegex,
-    cleanCode
+    cleanCode,
+    generateActivity
 };

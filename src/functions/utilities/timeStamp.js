@@ -1,3 +1,9 @@
+/**
+ * 
+  * @param {Date} timestamp wihout divding by 1000 | Timestamp to convert
+ * @param {String} type | Type of timestamp 
+ * @returns 
+ */
 module.exports = (timestamp, type) => {
   if (!timestamp)
     throw new TypeError("[visa2discord] Timestamp isn't specified");

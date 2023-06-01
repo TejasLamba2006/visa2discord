@@ -1,3 +1,8 @@
+/**
+ * 
+ * @param {String} text | Text to clean
+ * @returns {String} | Cleaned text
+ */
 module.exports = (text) => {
   if (typeof text === "string")
     return text

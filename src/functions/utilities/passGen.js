@@ -1,3 +1,8 @@
+/**
+ * 
+ * @param {String} Length | Length of password
+ * @returns {String} | Password of specified length
+ */
 module.exports = (Length) => {
   if (!Length) throw new TypeError("Length isn't specified");
   var length = Length,

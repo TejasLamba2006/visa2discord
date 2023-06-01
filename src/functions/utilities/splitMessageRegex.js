@@ -1,3 +1,14 @@
+/**
+ * 
+* @param {String} text The text to split
+* @param {Object} [options] The options to provide
+* @param {Number} [options.maxLength=2000] The maximum length of each message
+* @param {RegExp} [options.regex=/\n/g] The regex used to split the text
+* @param {String} [options.prepend=""] Text to prepend to each message
+* @param {String} [options.append=""] Text to append to each message
+* @returns {String[]} The array of messages
+ */
+
 module.exports = function splitMessageRegex(
   text,
   { maxLength = 2_000, regex = /\n/g, prepend = "", append = "" } = {}
