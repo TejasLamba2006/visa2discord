@@ -16,8 +16,10 @@ For your discord utilities
 - [Credits](#credits)
 - [Support](#support)
 - [Disclaimer](#disclaimer)
+- [Changelogs](#changelogs)
 - [End](#end)
 -------------------------------
+
 # Installation
 - To install this package, you can use the following command:
   ```bash
@@ -131,30 +133,33 @@ For your discord utilities
   - `f` => March 5, 2023 2:22 PM
   - `F` => Sunday, March 5, 2023 2:22 PM
   - `R` => A minute ago
-  # Contributing
+# Contributing
   - If you want to contribute to this project, you can fork this repository and make a pull request.
   - If you want to report a bug, you can create an issue.
   - If you want to request a feature, you can create an issue.
   - If you want to contact `visa2code#1747`, you can join my [discord server](https://discord.gg/e3CkRXy7HD).
   
-  # License
+# License
   - This project is licensed under the [MIT License]()
 
-  # Credits
+# Credits
   - [visa2code](https://github.com/TejasLamba2006) - Main Developer
 
-  # Support
+# Support
   - If you want to support me, you can star this repository and follow me on github.
   - You can also join my [discord server](https://discord.gg/e3CkRXy7HD).
 
-  # Disclaimer
+# Disclaimer
   - This project is not affiliated with discord or any other company.
   - This project is not responsible for any damage caused by this project.
   - This project is not responsible for any damage caused by the usage of this project.
   - This project is not responsible for any damage caused by the usage of the code provided in this project.
   - This project is not responsible for any damage caused by the usage of the code provided in this repository.
 
-  # End
+# Changelogs
+- [v1.0.15]
+   - Added `generateActivity` function: This function is used to generate a discord activity
+# End
   - Thanks for reading this readme.md file.
   - Have a nice day!
   - Goodbye!
