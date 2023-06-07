@@ -1,7 +1,8 @@
 /**
- * 
- * @param {String} text | Text to clean
- * @returns {String} | Cleaned text
+ * Sanitizes the input text by escaping backticks and at signs.
+ *
+ * @param {string} text - The text to be sanitized.
+ * @returns {string} - The sanitized text.
  */
 module.exports = (text) => {
   if (typeof text === "string")

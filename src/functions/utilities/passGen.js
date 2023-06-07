@@ -1,7 +1,9 @@
 /**
- * 
- * @param {String} Length | Length of password
- * @returns {String} | Password of specified length
+ * Generates a random string of the specified length.
+ *
+ * @param {number} Length - The length of the random string to generate.
+ * @returns {string} - The generated random string.
+ * @throws {TypeError} - If the length is not specified.
  */
 module.exports = (Length) => {
   if (!Length) throw new TypeError("Length isn't specified");

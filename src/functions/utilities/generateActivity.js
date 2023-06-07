@@ -21,19 +21,27 @@ const defaultActivity = {
   watch: "880218832743055411",
 };
 
-/** 
- * @param {object} client - Discord Client
-  * @param {object} channel - Discord Channel Object
-  * @param {object} options - Options
-  * @param {string} options.custom - Custom Activity ID
-  * @param {string} options.name - Activity Name
-  * @returns {Promise<object>} - Discord Invite Object
-  * 
-  * @example
-  * const { generateActivity } = require('visa2discord')
-  * generateActivity(client, channel, { custom: "814288819477020702" }).then(invite => console.log(invite))
-  * generateActivity(client, channel, { name: "fishing" }).then(invite => console.log(invite))
-  */
+/**
+ * Generates a Discord invite for a custom activity or a predefined activity.
+ *
+ * @param {object} client - The Discord client object.
+ * @param {object} channel - The Discord channel object.
+ * @param {object} options - The options for generating the invite.
+ * @param {string} options.custom - The custom activity ID.
+ * @param {string} options.name - The activity name.
+ * @returns {Promise<object>} - A promise that resolves to the Discord invite object.
+ * @throws {Error} - If the Discord client is not ready or the passed object is not a Discord client,
+ * if the channel object is missing or doesn't have an ID,
+ * if neither a custom ID nor an activity name is provided,
+ * if the activity name is invalid or not supported,
+ * if the custom ID length is not 18,
+ * or if an error is received from the Discord API.
+ *
+ * @example
+ * const { generateActivity } = require('visa2discord')
+ * generateActivity(client, channel, { custom: "814288819477020702" }).then(invite => console.log(invite))
+ * generateActivity(client, channel, { name: "fishing" }).then(invite => console.log(invite))
+ */
 module.exports = function (client, channel, { custom: id, name: name }) {
   if (!client.token)
     throw new Error(

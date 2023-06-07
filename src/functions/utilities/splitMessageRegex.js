@@ -1,12 +1,14 @@
 /**
- * 
-* @param {String} text The text to split
-* @param {Object} [options] The options to provide
-* @param {Number} [options.maxLength=2000] The maximum length of each message
-* @param {RegExp} [options.regex=/\n/g] The regex used to split the text
-* @param {String} [options.prepend=""] Text to prepend to each message
-* @param {String} [options.append=""] Text to append to each message
-* @returns {String[]} The array of messages
+ * Splits a given text into multiple parts based on a regular expression, ensuring each part's length does not exceed the maximum length.
+ *
+ * @param {string} text - The text to be split.
+ * @param {Object} options - Additional options for splitting the message (optional).
+ * @param {number} [options.maxLength=2000] - The maximum length allowed for each part.
+ * @param {RegExp} [options.regex=/\n/g] - The regular expression used to match delimiters for splitting.
+ * @param {string} [options.prepend=""] - The string to prepend to each part.
+ * @param {string} [options.append=""] - The string to append to each part.
+ * @returns {string[]} - An array of split message parts.
+ * @throws {RangeError} - If a single part exceeds the length limit.
  */
 
 module.exports = function splitMessageRegex(

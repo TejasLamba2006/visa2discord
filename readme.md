@@ -15,6 +15,7 @@ For your discord utilities
   - [Split MessageRegex](#split-messageregex)
   - [Discord Timestamp](#discord-timestamp)
   - [Discord activity generator](#discord-activity-generator)
+  - [Disable Buttons](#disable-buttons)
 - [Contributing](#contributing)
 - [License](#license)
 - [Credits](#credits)
@@ -201,6 +202,14 @@ For your discord utilities
   - `letterleague` => Letter League
   - `watch` => Watch
 
+## Disable Buttons
+- The `disableButtons` function is used to disable all buttons in a message
+- Usage
+  ```js
+  const { disableButtons } = require('visa2discord');
+  const message = await channel.send({ content: 'This is a test message', components: [row] });
+  message.edit({ components: disableButtons(message) });
+  ```
 # Contributing
 
 - If you want to contribute to this project, you can fork this repository and make a pull request.
@@ -231,6 +240,9 @@ For your discord utilities
 
 # Changelogs
 
+- [v1.0.16]
+  - Added `disableButtons` function: This function is used to disable all buttons in a message
+  - Improved jsDocs
 - [v1.0.15]
   - Added `generateActivity` function: This function is used to generate a discord activity
   - Fixed typo in `checkUdates.js`
