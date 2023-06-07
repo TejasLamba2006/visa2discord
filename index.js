@@ -8,7 +8,8 @@ const sleep = require('./src/functions/utilities/sleep'),
     discordTimestamp = require("./src/functions/utilities/timeStamp"),
     splitMessageRegex = require("./src/functions/utilities/splitMessageRegex"),
     cleanCode = require("./src/functions/utilities/cleanCode"),
-    generateActivity = require("./src/functions/utilities/generateActivity");
+    generateActivity = require("./src/functions/utilities/generateActivity"),
+    disableButtons = require("./src/functions/utilities/disableButtons");
 
 
 checkUpdate()
@@ -20,5 +21,6 @@ module.exports = {
     discordTimestamp,
     splitMessageRegex,
     cleanCode,
-    generateActivity
+    generateActivity,
+    disableButtons
 };

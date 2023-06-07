@@ -240,6 +240,8 @@ For your discord utilities
 
 # Changelogs
 
+- [v1.0.17]
+  - Minor Bug Fixes
 - [v1.0.16]
   - Added `disableButtons` function: This function is used to disable all buttons in a message
   - Improved jsDocs
