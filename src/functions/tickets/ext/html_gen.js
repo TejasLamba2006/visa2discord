@@ -15,15 +15,13 @@ const PARSE_MODE_EMOJI = 6;
 async function fillOut(guild, base, replacements) {
   for (const r of replacements) {
     let [k, v, mode] = r;
-
     if (r.length === 2) {
       r.push(PARSE_MODE_MARKDOWN);
     }
-
     if (mode !== PARSE_MODE_NONE) {
       v = await new ParseMention(v, guild).flow();
+      
     }
-
     if (mode === PARSE_MODE_MARKDOWN) {
       v = await ParseMarkdown(v).standard_message_flow();
     } else if (mode === PARSE_MODE_EMBED) {
@@ -36,9 +34,8 @@ async function fillOut(guild, base, replacements) {
       v = await ParseMarkdown(v).special_emoji_flow();
     }
 
-    base = base.replace("{{" + k + "}}", v);
+    base = base.replace("{{" + k + "}}", v)
   }
-
   return base;
 }
 

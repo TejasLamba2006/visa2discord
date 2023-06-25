@@ -2,7 +2,7 @@ const html = require('html');
 const moment = require('moment-timezone');
 const discord = require('discord.js');
 
-const { gatherMessages } = require('./message');
+const { MessageConstruct } = require('./message');
 const Component = require('./assets/components.js');
 const clearCache = require('../ext/cache');
 const passBot = require('../parse/mention');
@@ -34,7 +34,7 @@ class TranscriptDAO {
   ) {
     this.channel = channel.channel;
     this.messages = messages;
-    this.limit = limit ? parseInt(limit) : null;
+    this.limit = limit ? parseInt(limit) : 100;
     this.timezone = timezone;
     this.military_time = military_time;
     this.fancy_times = fancy_times;
@@ -56,8 +56,6 @@ class TranscriptDAO {
       this.timezone,
       this.military_time
     );
-    console.log('metaData', metaData)
-    console.log('messageHtml', messageHtml)
     await this.exportTranscript(messageHtml, metaData);
     clearCache();
     Component.menu_div_id = 0;
@@ -72,13 +70,19 @@ class TranscriptDAO {
         : DiscordUtils.default_avatar;
 
     const guild_name = escapeHtml(this.channel.guild.name);
-    const time_now = moment().tz(this.timezone).format('D MMMM YYYY [at] HH:mm:ss (z)');
-
+    const time_now = new Date().toLocaleString(this.timezone, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric',
+    });
     let meta_data_html = '';
     for (const data in metaData) {
-      const creation_time = metaData[data][1].format('MMM DD, YYYY');
+      const creation_time = metaData[data][1]?.toLocaleString();
       const joined_time = metaData[data][5]
-        ? metaData[data][5].format('MMM DD, YYYY')
+        ? metaData[data][5]?.toLocaleString()
         : 'Unknown';
 
       meta_data_html += await fillOut(this.channel.guild, meta_data_temp, [
@@ -137,13 +141,12 @@ class TranscriptDAO {
         ['TIMEZONE', this.timezone, PARSE_MODE_NONE],
       ]);
     }
-
     this.html = await fillOut(this.channel.guild, total, [
       ['SERVER_NAME', guild_name],
       ['GUILD_ID', this.channel.guild.id, PARSE_MODE_NONE],
       ['SERVER_AVATAR_URL', guild_icon, PARSE_MODE_NONE],
       ['CHANNEL_NAME', this.channel.name],
-      ['MESSAGE_COUNT', this.messages.length.toString()],
+      ['MESSAGE_COUNT', this.messages.size.toString()],
       ['MESSAGES', messageHtml, PARSE_MODE_NONE],
       ['META_DATA', meta_data_html, PARSE_MODE_NONE],
       ['DATE_TIME', time_now],
@@ -151,7 +154,7 @@ class TranscriptDAO {
       ['CHANNEL_CREATED_AT', channel_creation_time, PARSE_MODE_NONE],
       ['CHANNEL_TOPIC', channel_topic_html, PARSE_MODE_NONE],
       ['CHANNEL_ID', this.channel.id, PARSE_MODE_NONE],
-      ['MESSAGE_PARTICIPANTS', metaData.length.toString(), PARSE_MODE_NONE],
+      ['MESSAGE_PARTICIPANTS', Object.keys(metaData).length.toString(), PARSE_MODE_NONE],
       ['FANCY_TIME', _fancy_time, PARSE_MODE_NONE],
       ['SD', sd, PARSE_MODE_NONE],
     ]);
@@ -199,3 +202,29 @@ function escapeHtml(text) {
     return map[m];
   });
 }
+
+async function gatherMessages(messages, guild, pytz_timezone, military_time) {
+  let message_html = "";
+  let meta_data = {};
+  let previous_message = null;
+  for (const message of messages) {
+    const messageConstruct = new MessageConstruct(
+      message,
+      previous_message,
+      pytz_timezone,
+      military_time,
+      guild,
+      meta_data
+    );
+  
+    const [content_html, updated_meta_data] = await messageConstruct.construct_message();
+    
+    message_html += content_html;
+    previous_message = message;
+    meta_data = updated_meta_data;
+  }
+
+  message_html += "</div>";
+  return [message_html, meta_data];
+}
+

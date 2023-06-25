@@ -1,23 +1,15 @@
 const Discord = require('discord.js');
 const Transcript = require('./construct/transcript.js');
 
-async function quickExport(channel, guild = null, bot = null) {
+async function quickExport(channel, messages, guild = null, bot = null) {
   if (guild) {
     channel.guild = guild;
   }
-const allMessages  = new Discord.Collection();
-  let messages = await channel.messages.fetch({ limit: 100 });
-  allMessages.concat(messages);
-  while (messages.size === 100) {
-    const lastMessageId = messages.lastKey();
-    messages = await channel.messages.fetch({ limit: 100, before: lastMessageId });
-    allMessages.concat(messages);
-  }
-console.log(allMessages)
+
   const transcript = (await new Transcript({
     channel: channel,
     limit: null,
-    messages: allMessages,
+    messages: null,
     timezone: 'UTC',
     military_time: true,
     fancy_times: true,
@@ -26,18 +18,16 @@ console.log(allMessages)
     support_dev: true,
     bot: bot
   }).export()).html;
-console.log(transcript)
   if (!transcript) {
     return;
   }
-
   const transcriptEmbed = new Discord.EmbedBuilder()
     .setDescription(`**Transcript Name:** transcript-${channel.name}\n\n`)
     .setColor('#5865F2');
 
   const transcriptFile = new Discord.AttachmentBuilder(
     Buffer.from(transcript, 'utf-8'),
-    `transcript-${channel.name}.html`
+    {name: `transcript-${channel.name}.html`}
   );
 
   return channel.send({ embeds: [transcriptEmbed], files: [transcriptFile] });

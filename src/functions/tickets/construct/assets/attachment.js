@@ -1,5 +1,5 @@
 const { DiscordUtils } = require('../../ext/discord_utils');
-const { filOut, img_attachment, msg_attachment, audio_attachment, video_attachment, PARSE_MODE_NONE } = require('../../ext/html_gen.js');
+const { fillOut, img_attachment, msg_attachment, audio_attachment, video_attachment, PARSE_MODE_NONE } = require('../../ext/html_gen.js');
 
 class Attachment {
   constructor(attachments, guild) {
@@ -13,12 +13,12 @@ class Attachment {
   }
 
   async build_attachment() {
-    if (this.attachments.content_type !== null) {
-      if (this.attachments.content_type.includes("image")) {
+    if (this.attachments.contentType !== null) {
+      if (this.attachments.contentType.includes("image")) {
         return await this.image();
-      } else if (this.attachments.content_type.includes("video")) {
+      } else if (this.attachments.contentType.includes("video")) {
         return await this.video();
-      } else if (this.attachments.content_type.includes("audio")) {
+      } else if (this.attachments.contentType.includes("audio")) {
         return await this.audio();
       }
     }
@@ -26,14 +26,14 @@ class Attachment {
   }
 
   async image() {
-    this.attachments = await fill_out(this.guild, img_attachment, [
+    this.attachments = await fillOut(this.guild, img_attachment, [
       ["ATTACH_URL", this.attachments.proxy_url, PARSE_MODE_NONE],
       ["ATTACH_URL_THUMB", this.attachments.proxy_url, PARSE_MODE_NONE]
     ]);
   }
 
   async video() {
-    this.attachments = await fill_out(this.guild, video_attachment, [
+    this.attachments = await fillOut(this.guild, video_attachment, [
       ["ATTACH_URL", this.attachments.proxy_url, PARSE_MODE_NONE]
     ]);
   }
@@ -42,7 +42,7 @@ class Attachment {
     const file_icon = DiscordUtils.file_attachment_audio;
     const file_size = this.get_file_size(this.attachments.size);
 
-    this.attachments = await fill_out(this.guild, audio_attachment, [
+    this.attachments = await fillOut(this.guild, audio_attachment, [
       ["ATTACH_ICON", file_icon, PARSE_MODE_NONE],
       ["ATTACH_URL", this.attachments.url, PARSE_MODE_NONE],
       ["ATTACH_BYTES", String(file_size), PARSE_MODE_NONE],
@@ -55,7 +55,7 @@ class Attachment {
     const file_icon = await this.get_file_icon();
     const file_size = this.get_file_size(this.attachments.size);
 
-    this.attachments = await fill_out(this.guild, msg_attachment, [
+    this.attachments = await fillOut(this.guild, msg_attachment, [
       ["ATTACH_ICON", file_icon, PARSE_MODE_NONE],
       ["ATTACH_URL", this.attachments.url, PARSE_MODE_NONE],
       ["ATTACH_BYTES", String(file_size), PARSE_MODE_NONE],
