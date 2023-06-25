@@ -10,6 +10,7 @@ const {
   PARSE_MODE_MARKDOWN,
   PARSE_MODE_EMOJI,
 } = require("../../ext/html_gen.js");
+
 class Component {
   static styles = {
     Primary: "#5865F2",
@@ -20,8 +21,6 @@ class Component {
   };
 
   static components = "";
-  static menus = "";
-  static buttons = "";
   static menu_div_id = 0;
 
   constructor(component, guild) {
@@ -45,9 +44,10 @@ class Component {
     const style = Component.styles[Discord.ButtonStyle[c.style]];
     const icon = url ? DiscordUtils.button_external_link : "";
     const emoji = c.emoji?.id
-    ? `<img src="https://cdn.discordapp.com/emojis/${c.emoji.id}.png" height="20px" width="20px" alt="${c.emoji.name}" />`
-    : (c.emoji?.name || "");
-      Component.buttons += await fillOut(this.guild, component_button, [
+      ? `<img src="https://cdn.discordapp.com/emojis/${c.emoji.id}.png" height="20px" width="20px" alt="${c.emoji.name}" />`
+      : c.emoji?.name || "";
+
+    Component.components += await fillOut(this.guild, component_button, [
       [
         "DISABLED",
         c.disabled ? "chatlog__component-disabled" : "",
@@ -70,7 +70,7 @@ class Component {
       content = await this.buildMenuOptions(options);
     }
 
-    Component.menus += await fillOut(this.guild, component_menu, [
+    Component.components += await fillOut(this.guild, component_menu, [
       [
         "DISABLED",
         c.disabled ? "chatlog__component-disabled" : "",
@@ -118,14 +118,6 @@ class Component {
   async flow() {
     for (const c of this.component.components) {
       await this.buildComponent(c);
-    }
-
-    if (Component.menus) {
-      Component.components += `<div class="chatlog__components">${Component.menus}</div>`;
-    }
-
-    if (Component.buttons) {
-      Component.components += `<div class="chatlog__components">${Component.buttons}</div>`;
     }
 
     return Component.components;
