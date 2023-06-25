@@ -1,7 +1,10 @@
-const Discord = require('discord.js');
-const moment = require('moment-timezone');
-const DiscordUtils = require('../ext/discord_utils');
-const { Attachment } = require("./assets/attachment")
+const Discord = require("discord.js");
+const moment = require("moment-timezone");
+const DiscordUtils = require("../ext/discord_utils");
+const { Attachment } = require("./assets/attachment");
+const { Embed } = require("./assets/embed");
+const { Reaction } = require("./assets/reaction");
+const { Component } = require("./assets/components");
 const {
   bot_tag,
   bot_tag_verified,
@@ -18,16 +21,16 @@ const {
   PARSE_MODE_NONE,
   PARSE_MODE_MARKDOWN,
   PARSE_MODE_REFERENCE,
-  fillOut
-} = require('../ext/html_gen.js'); // Import the HTML generator functions
+  fillOut,
+} = require("../ext/html_gen.js");
 
 class MessageConstruct {
-  message_html = '';
-  embeds = '';
-  reactions = '';
-  components = '';
-  attachments = '';
-  time_format = '';
+  message_html = "";
+  embeds = "";
+  reactions = "";
+  components = "";
+  attachments = "";
+  time_format = "";
 
   constructor(
     message,
@@ -42,9 +45,9 @@ class MessageConstruct {
     this.pytz_timezone = pytz_timezone;
     this.military_time = military_time;
     this.guild = guild;
-    this.time_format = '%A, %e %B %Y %I:%M %p';
+    this.time_format = "%A, %e %B %Y %I:%M %p";
     if (this.military_time) {
-      this.time_format = '%A, %e %B %Y %H:%M';
+      this.time_format = "%A, %e %B %Y %H:%M";
     }
 
     const [message_created_at, message_edited_at] = this.set_time();
@@ -81,7 +84,8 @@ class MessageConstruct {
       this.message.interaction !== "" ||
       this.previous_message.author.id !== this.message.author.id ||
       this.message.webhookId !== null ||
-      this.message.createdTimestamp > this.previous_message.createdTimestamp + 4 * 60 * 1000
+      this.message.createdTimestamp >
+        this.previous_message.createdTimestamp + 4 * 60 * 1000
     );
   }
   async generate_message_divider(channel_audit = false) {
@@ -89,30 +93,31 @@ class MessageConstruct {
       if (this.previous_message !== null) {
         this.message_html += await fillOut(this.guild, end_message, []);
       }
-  
+
       if (channel_audit) {
         return;
       }
       let followup_symbol = "";
       const is_bot = _gather_user_bot(message.author);
-      const avatar_url = this.message.author.displayAvatarURL() || DiscordUtils.default_avatar;
-  
+      const avatar_url =
+        this.message.author.displayAvatarURL() || DiscordUtils.default_avatar;
+
       if (message.reference !== "" || this.message.interaction) {
         followup_symbol = "<div class='chatlog__followup-symbol'></div>";
       }
-  
+
       let time = this.message.createdAt;
       if (!this.message.createdAt) {
         time = timezone("UTC").localize(time);
       }
-  
-      const default_timestamp = time.toLocaleString(this.pytz_timezone)
-  
+
+      const default_timestamp = time.toLocaleString(this.pytz_timezone);
+
       this.message_html += await fillOut(this.guild, start_message, [
-        ["REFERENCE_SYMBOL", followup_symbol, PARSE_MODE_NONE],
+        ["REFERENCE_SYMBOL", this.message.reference || this.message.interaction ? followup_symbol : "", PARSE_MODE_NONE],
         [
           "REFERENCE",
-          this.message.reference || this.message.interaction,
+          this.message.reference || this.message.interaction || "",
           PARSE_MODE_NONE,
         ],
         ["AVATAR_URL", String(avatar_url), PARSE_MODE_NONE],
@@ -122,23 +127,24 @@ class MessageConstruct {
           PARSE_MODE_NONE,
         ],
         ["USER_ID", String(this.message.author.id)],
+        ["USER_COLOUR", await this._gather_user_colour(this.message.author)],
         [
-          "USER_COLOUR",
-          await this._gather_user_colour(this.message.author),
+          "USER_ICON",
+          await this._gather_user_icon(this.message.author),
+          PARSE_MODE_NONE,
         ],
-        ["USER_ICON", await this._gather_user_icon(this.message.author), PARSE_MODE_NONE],
         ["NAME", String(escapeHtml(this.message.author.display_name))],
         ["BOT_TAG", String(is_bot), PARSE_MODE_NONE],
         ["TIMESTAMP", String(this.message.createdTimestamp)],
         ["DEFAULT_TIMESTAMP", String(default_timestamp), PARSE_MODE_NONE],
-        ["MESSAGE_ID", String(this.message.id)],
+        ["MESSAGE_ID", this.message.id],
         ["MESSAGE_CONTENT", this.message.content, PARSE_MODE_NONE],
         ["EMBEDS", this.embeds, PARSE_MODE_NONE],
         ["ATTACHMENTS", this.attachments, PARSE_MODE_NONE],
         ["COMPONENTS", this.components, PARSE_MODE_NONE],
         ["EMOJI", this.reactions, PARSE_MODE_NONE],
       ]);
-  
+
       return true;
     }
   }
@@ -148,29 +154,29 @@ class MessageConstruct {
         if (xd.previous_message !== null) {
           xd.message_html += await fillOut(xd.guild, end_message, []);
         }
-    
+
         if (channel_audit) {
           return;
         }
         let followup_symbol = "";
         const is_bot = xd._gather_user_bot(xd.message.author);
-        const avatar_url = xd.message.author.displayAvatarURL() || DiscordUtils.default_avatar;
-    
+        const avatar_url =
+          xd.message.author.displayAvatarURL() || DiscordUtils.default_avatar;
+
         if (xd.message.reference !== "" || xd.message.interaction) {
           followup_symbol = "<div class='chatlog__followup-symbol'></div>";
         }
-    
+
         let time = xd.message.createdAt;
         if (!xd.message.createdAt) {
           time = timezone("UTC").localize(time);
         }
-    
         const default_timestamp = time.toLocaleString(xd.pytz_timezone);
         xd.message_html += await fillOut(xd.guild, start_message, [
-          ["REFERENCE_SYMBOL", followup_symbol, PARSE_MODE_NONE],
+          ["REFERENCE_SYMBOL", xd.message.reference || xd.message.interaction ? followup_symbol : "", PARSE_MODE_NONE],
           [
             "REFERENCE",
-            xd.message.reference || xd.message.interaction,
+            xd.message.reference || xd.message.interaction || "",
             PARSE_MODE_NONE,
           ],
           ["AVATAR_URL", String(avatar_url), PARSE_MODE_NONE],
@@ -180,16 +186,17 @@ class MessageConstruct {
             PARSE_MODE_NONE,
           ],
           ["USER_ID", String(xd.message.author.id)],
+          ["USER_COLOUR", await xd._gather_user_colour(xd.message.author)],
           [
-            "USER_COLOUR",
-            await xd._gather_user_colour(xd.message.author),
+            "USER_ICON",
+            await xd._gather_user_icon(xd.message.author),
+            PARSE_MODE_NONE,
           ],
-          ["USER_ICON", await xd._gather_user_icon(xd.message.author), PARSE_MODE_NONE],
           ["NAME", String(escapeHtml(xd.message.author.username))],
           ["BOT_TAG", String(is_bot), PARSE_MODE_NONE],
           ["TIMESTAMP", String(xd.message.createdTimestamp)],
           ["DEFAULT_TIMESTAMP", String(default_timestamp), PARSE_MODE_NONE],
-          ["MESSAGE_ID", String(xd.message.id)],
+          ["MESSAGE_ID", xd.message.id],
           ["MESSAGE_CONTENT", xd.message.content, PARSE_MODE_NONE],
           ["EMBEDS", xd.embeds, PARSE_MODE_NONE],
           ["ATTACHMENTS", xd.attachments, PARSE_MODE_NONE],
@@ -204,7 +211,7 @@ class MessageConstruct {
       return this.message_html;
     }
     this.message_html += await fillOut(guild, message_body, [
-      ["MESSAGE_ID", String(this.message.id)],
+      ["MESSAGE_ID", this.message.id],
       ["MESSAGE_CONTENT", this.message.content, PARSE_MODE_NONE],
       ["EMBEDS", this.embeds, PARSE_MODE_NONE],
       ["ATTACHMENTS", this.attachments, PARSE_MODE_NONE],
@@ -213,10 +220,9 @@ class MessageConstruct {
       ["TIMESTAMP", this.message.createdAt, PARSE_MODE_NONE],
       ["TIME", this.message.createdAt.split(" ").pop(), PARSE_MODE_NONE],
     ]);
-  
+
     return this.message_html;
   }
-  
 
   async build_pin() {
     await this.generate_message_divider(true);
@@ -224,16 +230,19 @@ class MessageConstruct {
   }
   async _gather_user_colour(author) {
     const member = await this._gather_member(author);
-    const user_colour = member && member.displayHexColor !== "#000000" ? member.displayHexColor : "#FFFFFF";
+    const user_colour =
+      member && member.displayHexColor !== "#000000"
+        ? member.displayHexColor
+        : "#FFFFFF";
     return `color: ${user_colour};`;
   }
   async _gather_member(author) {
     let member = this.guild.members.cache.get(author.id);
-  
+
     if (member) {
       return member;
     }
-  
+
     try {
       member = await this.guild.members.fetch(author.id);
       return member;
@@ -241,84 +250,105 @@ class MessageConstruct {
       return null;
     }
   }
-  
+
   async build_pin_template() {
     this.message_html += await fillOut(this.guild, message_pin, [
       ["PIN_URL", DiscordUtils.pinned_message_icon, PARSE_MODE_NONE],
       ["USER_COLOUR", await this._gather_user_colour(this.message.author)],
       ["NAME", String(escapeHtml(this.message.author.display_name))],
-      ["NAME_TAG", `${this.message.author.username}#${this.message.author.discriminator}`, PARSE_MODE_NONE],
-      ["MESSAGE_ID", String(this.message.id), PARSE_MODE_NONE],
-      ["REF_MESSAGE_ID", String(this.message.reference.message_id), PARSE_MODE_NONE]
+      [
+        "NAME_TAG",
+        `${this.message.author.username}#${this.message.author.discriminator}`,
+        PARSE_MODE_NONE,
+      ],
+      ["MESSAGE_ID", this.message.id, PARSE_MODE_NONE],
+      [
+        "REF_MESSAGE_ID",
+        String(this.message.reference.message_id),
+        PARSE_MODE_NONE,
+      ],
     ]);
   }
-  
+
   async build_thread() {
     await this.generate_message_divider(true);
     await this.build_thread_template();
   }
   async _gather_user_icon(author) {
     const member = await this._gather_member(author);
-  
+
     if (!member) {
       return "";
     }
-if (member.roles.highest.icon && member.roles.highest.iconURL()) {
+    if (member.roles.highest.icon && member.roles.highest.iconURL()) {
       return `<img class='chatlog__role-icon' src='${member.roles.highest.iconURL()}' alt='Role Icon'>`;
     }
-  
+
     return "";
   }
-  
+
   async generate_message_divider(channel_audit = false) {
     if (channel_audit || this._generate_message_divider_check()) {
       if (this.previous_message !== null) {
         this.message_html += await fillOut(this.guild, end_message, []);
       }
-  
+
       if (channel_audit) {
         return;
       }
-  
+
       let followup_symbol = "";
       const is_bot = this._gather_user_bot(this.message.author);
-      const avatar_url = this.message.author.displayAvatarURL() || DiscordUtils.default_avatar;
-  
+      const avatar_url =
+        this.message.author.displayAvatarURL() || DiscordUtils.default_avatar;
+
       if (this.message.reference !== "" || this.message.interaction) {
         followup_symbol = "<div class='chatlog__followup-symbol'></div>";
       }
-  
+
       let time = this.message.createdAt;
       if (!this.message.createdAt) {
         time = moment.tz(time, "UTC");
       }
-  
-      const default_timestamp = time.toLocaleString(this.pytz_timezone)
-  
+
+      const default_timestamp = time.toLocaleString(this.pytz_timezone);
+
       this.message_html += await fillOut(this.guild, start_message, [
-        ["REFERENCE_SYMBOL", followup_symbol, PARSE_MODE_NONE],
-        ["REFERENCE", this.message.reference || this.message.interaction, PARSE_MODE_NONE],
+        ["REFERENCE_SYMBOL", this.message.reference || this.message.interaction ? followup_symbol : "", PARSE_MODE_NONE],
+        [
+          "REFERENCE",
+          this.message.reference || this.message.interaction || "",
+          PARSE_MODE_NONE,
+        ],
         ["AVATAR_URL", String(avatar_url), PARSE_MODE_NONE],
-        ["NAME_TAG", `${this.message.author.username}#${this.message.author.discriminator}`, PARSE_MODE_NONE],
+        [
+          "NAME_TAG",
+          `${this.message.author.username}#${this.message.author.discriminator}`,
+          PARSE_MODE_NONE,
+        ],
         ["USER_ID", String(this.message.author.id)],
         ["USER_COLOUR", await this._gather_user_colour(this.message.author)],
-        ["USER_ICON", await this._gather_user_icon(this.message.author), PARSE_MODE_NONE],
+        [
+          "USER_ICON",
+          await this._gather_user_icon(this.message.author),
+          PARSE_MODE_NONE,
+        ],
         ["NAME", String(escapeHtml(this.message.author.username))],
         ["BOT_TAG", String(is_bot), PARSE_MODE_NONE],
         ["TIMESTAMP", String(this.message_created_at)],
         ["DEFAULT_TIMESTAMP", String(default_timestamp), PARSE_MODE_NONE],
-        ["MESSAGE_ID", String(this.message.id)],
+        ["MESSAGE_ID", this.message.id],
         ["MESSAGE_CONTENT", this.message.content, PARSE_MODE_NONE],
         ["EMBEDS", this.embeds, PARSE_MODE_NONE],
         ["ATTACHMENTS", this.attachments, PARSE_MODE_NONE],
         ["COMPONENTS", this.components, PARSE_MODE_NONE],
-        ["EMOJI", this.reactions, PARSE_MODE_NONE]
+        ["EMOJI", this.reactions, PARSE_MODE_NONE],
       ]);
-  
+
       return true;
     }
   }
-  
+
   _gather_user_bot(author) {
     if (author.bot && author.flags.has(Discord.UserFlags.VerifiedBot)) {
       return bot_tag_verified;
@@ -327,7 +357,7 @@ if (member.roles.highest.icon && member.roles.highest.iconURL()) {
     }
     return "";
   }
-  
+
   async build_meta_data() {
     const user_id = this.message.author.id;
 
@@ -337,11 +367,13 @@ if (member.roles.highest.icon && member.roles.highest.iconURL()) {
       const user_name_discriminator = `${this.message.author.username}#${this.message.author.discriminator}`;
       const user_created_at = this.message.author.created_at;
       const user_bot = this._gather_user_bot(this.message.author);
-      const user_avatar = this.message.author.displayAvatarURL() || DiscordUtils.default_avatar;
+      const user_avatar =
+        this.message.author.displayAvatarURL() || DiscordUtils.default_avatar;
       const user_joined_at = this.message.author.joined_at || null;
-      const user_display_name = this.message.author.display_name !== this.message.author.username
-        ? `<div class="meta__display-name">${this.message.author.username}</div>`
-        : '';
+      const user_display_name =
+        this.message.author.display_name !== this.message.author.username
+          ? `<div class="meta__display-name">${this.message.author.username}</div>`
+          : "";
       this.meta_data[user_id] = [
         user_name_discriminator,
         user_created_at,
@@ -349,39 +381,47 @@ if (member.roles.highest.icon && member.roles.highest.iconURL()) {
         user_avatar,
         1,
         user_joined_at,
-        user_display_name
+        user_display_name,
       ];
     }
   }
 
   async build_content() {
     if (!this.message.content) {
-      this.message.content = '';
+      this.message.content = "";
       return;
     }
 
-    if (this.message_edited_at) {
-      this.message_edited_at = this.message_edited_at.tz(this.pytz_timezone);
-      const formatted_edited_at = this.message_edited_at.format(this.time_format);
+    if (this.message.editedTimestamp) {
+      const formatted_edited_at = this.message.editedTimestamp.toLocaleString(
+        this.pytz_timezone
+      );
 
-      const edited_indicator = this.message.edited
+      const edited_indicator = this.message.editedTimestamp
         ? `<span class="edited-indicator"> (edited: ${formatted_edited_at})</span>`
-        : '';
+        : "";
 
       this.message_html += `<div class="message__content">${this.message.content}${edited_indicator}</div>`;
     }
   }
 
   async build_reference() {
-    if (this.message_reference && this.message_reference.type === Discord.MessageType.Default) {
-      const referenced_message_id = this.message_reference.message_id;
-      const referenced_channel_id = this.message_reference.channel_id;
+    if (
+      this.message.reference &&
+      this.message.type === Discord.MessageType.Reply
+    ) {
+      const referenced_message_id = this.message.reference.messageId;
+      const referenced_channel_id = this.message.reference.channelId;
 
-      let referenced_message_html = '';
+      let referenced_message_html = "";
 
       if (referenced_channel_id && referenced_message_id) {
-        const referenced_channel = this.guild.channels.get(referenced_channel_id);
-        const referenced_message = await referenced_channel.fetchMessage(referenced_message_id);
+        const referenced_channel = await this.guild.channels.fetch(
+          referenced_channel_id
+        );
+        const referenced_message = await referenced_channel.messages.fetch(
+          referenced_message_id
+        );
 
         if (referenced_message) {
           const referenced_message_construct = new MessageConstruct(
@@ -392,7 +432,8 @@ if (member.roles.highest.icon && member.roles.highest.iconURL()) {
             this.guild,
             this.meta_data
           );
-          [referenced_message_html, this.meta_data] = await referenced_message_construct.construct_message();
+          [referenced_message_html, this.meta_data] =
+            await referenced_message_construct.construct_message();
         }
       }
 
@@ -405,18 +446,24 @@ if (member.roles.highest.icon && member.roles.highest.iconURL()) {
   }
 
   async build_interaction() {
-    if (this.message_interaction) {
-      const interaction_user_id = this.message_interaction.user_id;
-      const interaction_user = await this.guild.fetchMember(interaction_user_id);
-      const interaction_user_name = interaction_user ? interaction_user.displayName : '';
+    if (this.message.interaction) {
+      const interaction_user_id = this.message.interaction.user.id;
+      const interaction_user = await this.guild.members.fetch(
+        interaction_user_id
+      );
+      const interaction_user_name = interaction_user
+        ? interaction_user.username
+        : "";
 
-      const interaction_type = this.message_interaction.type;
-      let interaction_text = '';
+      const interaction_type = this.message.interaction.type;
+      let interaction_text = "";
 
       if (interaction_type === Discord.InteractionType.ApplicationCommand) {
-        interaction_text = `Interacted with ${interaction_user_name}: ${this.message_interaction.commandName}`;
-      } else if (interaction_type === Discord.InteractionType.MessageComponent) {
-        interaction_text = `Interacted with ${interaction_user_name}: ${this.message_interaction.customId}`;
+        interaction_text = `Interacted with ${interaction_user_name}: ${this.message.interaction.commandName}`;
+      } else if (
+        interaction_type === Discord.InteractionType.MessageComponent
+      ) {
+        interaction_text = `Interacted with ${interaction_user_name}: ${this.message.interaction.user.id}`;
       }
 
       if (interaction_text) {
@@ -436,12 +483,12 @@ if (member.roles.highest.icon && member.roles.highest.iconURL()) {
   async build_assets() {
     await this.build_attachments();
     await this.build_embeds();
-    await this.build_reactions();
     await this.build_components();
+    await this.build_reactions();
   }
 
   async build_attachments() {
-    if (this.message.attachments.length > 0) {
+    if (this.message.attachments.size > 0) {
       this.message.attachments.forEach(async (attachment) => {
         this.attachments += await new Attachment(attachment).flow();
       });
@@ -450,82 +497,17 @@ if (member.roles.highest.icon && member.roles.highest.iconURL()) {
 
   async build_embeds() {
     if (this.message.embeds.length > 0) {
-      this.message.embeds.forEach(embed => {
-        // Extract necessary information from the embed object
-        const embed_title = embed.title || '';
-        const embed_type = embed.type || '';
-        const embed_description = embed.description || '';
-        const embed_url = embed.url || '';
-        const embed_color = embed.color || '';
-        const embed_fields = embed.fields || [];
-        const embed_footer = embed.footer ? embed.footer.text || '' : '';
-        const embed_image = embed.image ? embed.image.url || '' : '';
-        const embed_thumbnail = embed.thumbnail ? embed.thumbnail.url || '' : '';
-        const embed_author = embed.author ? embed.author.username || '' : '';
-
-        // Build the HTML structure for the embed
-        let embed_html = `<div class="message__embed">`;
-
-        if (embed_title) {
-          embed_html += `<div class="embed__title">${embed_title}</div>`;
-        }
-
-        if (embed_type) {
-          embed_html += `<div class="embed__type">${embed_type}</div>`;
-        }
-
-        if (embed_description) {
-          embed_html += `<div class="embed__description">${embed_description}</div>`;
-        }
-
-        if (embed_url) {
-          embed_html += `<div class="embed__url">${embed_url}</div>`;
-        }
-
-        if (embed_color) {
-          embed_html += `<div class="embed__color">${embed_color}</div>`;
-        }
-
-        if (embed_fields.length > 0) {
-          embed_html += `<div class="embed__fields">`;
-          embed_fields.forEach(field => {
-            const field_name = field.name || '';
-            const field_value = field.value || '';
-            const field_inline = field.inline ? 'inline' : 'not-inline';
-            embed_html += `<div class="embed__field ${field_inline}"><span class="field__name">${field_name}</span><span class="field__value">${field_value}</span></div>`;
-          });
-          embed_html += `</div>`;
-        }
-
-        if (embed_footer) {
-          embed_html += `<div class="embed__footer">${embed_footer}</div>`;
-        }
-
-        if (embed_image) {
-          embed_html += `<div class="embed__image"><img src="${embed_image}" alt="Embed Image"></div>`;
-        }
-
-        if (embed_thumbnail) {
-          embed_html += `<div class="embed__thumbnail"><img src="${embed_thumbnail}" alt="Embed Thumbnail"></div>`;
-        }
-
-        if (embed_author) {
-          embed_html += `<div class="embed__author">${embed_author}</div>`;
-        }
-
-        embed_html += `</div>`;
-        this.message_html += embed_html;
+      this.message.embeds.forEach(async (embed) => {
+        this.embeds += await new Embed(embed, this.guild).flow();
       });
     }
   }
 
   async build_reactions() {
+   // console.log(this.message.reactions, "reactions");
     if (this.message.reactions.size > 0) {
-      this.message.reactions.forEach(reaction => {
-        const reaction_emoji = reaction.emoji;
-        const reaction_count = reaction.count;
-        const reaction_html = `<span class="reaction">${reaction_emoji} ${reaction_count}</span>`;
-        this.reactions_html += reaction_html;
+      this.message.reactions.forEach(async (reaction) => {
+        this.reactions += await new Reaction(reaction, this.guild).flow();
       });
 
       if (this.reactions_html) {
@@ -535,81 +517,70 @@ if (member.roles.highest.icon && member.roles.highest.iconURL()) {
   }
   set_time(message = null) {
     message = message || this.message;
+    console.log(message, "message");
     const created_at_str = this.to_local_time_str(message.createdAt);
-    const edited_at_str = message.editedAt ? this.to_local_time_str(message.editedAt) : "";
-  
+    const edited_at_str = message.editedAt
+      ? this.to_local_time_str(message.editedAt)
+      : "";
+
     return [created_at_str, edited_at_str];
   }
   to_local_time_str(time) {
     if (!this.message.createdAt) {
       time = moment.tz(time, "UTC");
     }
-  
+
     const local_time = time.toLocaleString(this.pytz_timezone);
-  
+
     if (this.military_time) {
       return local_time.toLocaleString(this.time_format);
     }
-  
+
     return local_time.toLocaleString(this.time_format);
   }
-  
 
   async build_components() {
     if (this.message.components.length > 0) {
-      this.message.components.forEach(component => {
-        const component_type = component.type;
-        let component_html = '';
-
-        if (component_type === Discord.ComponentType.ActionRow) {
-          component_html += `<div class="component__action-row">`;
-
-          component.components.forEach(subcomponent => {
-            const subcomponent_type = subcomponent.type;
-            let subcomponent_html = '';
-
-            if (subcomponent_type === Discord.ComponentType.Button) {
-              const button_label = subcomponent.label;
-              const button_style = subcomponent.style || 'primary';
-              const button_disabled = subcomponent.disabled ? 'disabled' : '';
-
-              subcomponent_html += `<button class="component__button ${button_style} ${button_disabled}">${button_label}</button>`;
-            }
-
-            component_html += subcomponent_html;
-          });
-
-          component_html += `</div>`;
-        }
-
-        this.components_html += component_html;
+      this.message.components.forEach(async (component) => {
+        this.components += await new Component(this.message.components[0], this.guild).flow();
       });
-
-      if (this.components_html) {
-        this.message_html += `<div class="message__components">${this.components_html}</div>`;
-      }
     }
   }
 }
 
 // Function to convert the message object to HTML
-async function convertMessageToHTML(message, previousMessage, pytz_timezone, military_time, guild, meta_data) {
-  const messageConstruct = new MessageConstruct(message, previousMessage, pytz_timezone, military_time, guild, meta_data);
-  const [message_html, updated_meta_data] = await messageConstruct.construct_message();
+async function convertMessageToHTML(
+  message,
+  previousMessage,
+  pytz_timezone,
+  military_time,
+  guild,
+  meta_data
+) {
+  const messageConstruct = new MessageConstruct(
+    message,
+    previousMessage,
+    pytz_timezone,
+    military_time,
+    guild,
+    meta_data
+  );
+  const [message_html, updated_meta_data] =
+    await messageConstruct.construct_message();
   return { message_html, updated_meta_data };
 }
 module.exports = {
   convertMessageToHTML,
-  MessageConstruct
-}
+  MessageConstruct,
+};
 
 function escapeHtml(text) {
   const map = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;',
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;",
   };
   return text.replace(/[&<>"']/g, function (m) {
     return map[m];

@@ -1,4 +1,3 @@
-const html = require('html');
 const { convertEmoji } = require('../ext/emoji_convert');
 
 class ParseMarkdown {
@@ -115,11 +114,11 @@ class ParseMarkdown {
         (match) =>
           `<pre><code class="hljs ${
             match[1] ? `language-${match[1]}` : ""
-          }">${html.escape(match[2])}</code></pre>`,
+          }">${escapeHtml(match[2])}</code></pre>`,
       ],
       [
         /`(.+?)`/g,
-        (match) => `<code class="inline-code">${html.escape(match[1])}</code>`,
+        (match) => `<code class="inline-code">${escapeHtml(match[1])}</code>`,
       ],
     ];
 
@@ -140,7 +139,58 @@ class ParseMarkdown {
       );
     }
   }
-
+  parseEmbedMarkdown() {
+    const pattern = /\[(.+?)]\((.+?)\)/g;
+    let match = pattern.exec(this.content);
+    while (match !== null) {
+      const affectedText = match[1];
+      const affectedUrl = match[2];
+      this.content = this.content.replace(
+        this.content.substring(match.index, match.index + match[0].length),
+        `<a href="${affectedUrl}">${affectedText}</a>`
+      );
+      match = pattern.exec(this.content);
+    }
+  
+    const lines = this.content.split("\n");
+    let quoteBuffer = null;
+    let newContent = "";
+    const quotePattern = /^>\s(.+)/;
+  
+    if (lines.length === 1) {
+      if (quotePattern.test(lines[0])) {
+        this.content = `<div class="quote">${lines[0].substring(2)}</div>`;
+        return this.content;
+      }
+      this.content = lines[0];
+      return this.content;
+    }
+  
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (quotePattern.test(line) && quoteBuffer) {
+        quoteBuffer += "\n" + line.substring(2);
+      } else if (!quoteBuffer) {
+        if (quotePattern.test(line)) {
+          quoteBuffer = line.substring(2);
+        } else {
+          newContent += line + "\n";
+        }
+      } else {
+        newContent += `<div class="quote">${quoteBuffer}</div>`;
+        newContent += line;
+        quoteBuffer = "";
+      }
+    }
+  
+    if (quoteBuffer) {
+      newContent += `<div class="quote">${quoteBuffer}</div>`;
+    }
+  
+    this.content = newContent;
+    return this.content;
+  }
+  
   httpsHttpLinks() {
     const pattern = new RegExp(
       /(?<!src=)(?<!href=)(?<!\!)(https?:\/\/[^\s/$.?#].[^\s]*)/gi
@@ -150,4 +200,18 @@ class ParseMarkdown {
       '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
     );
   }
+}
+
+module.exports = ParseMarkdown;
+function escapeHtml(text) {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;',
+  };
+  return text.replace(/[&<>"']/g, function (m) {
+    return map[m];
+  });
 }

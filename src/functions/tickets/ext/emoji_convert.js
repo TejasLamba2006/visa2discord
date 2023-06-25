@@ -1,8 +1,9 @@
-const emoji = require('emoji');
-const fetch = require('node-fetch');
-const cache = require('./cache.js');
+const emoji = require("emoji");
+const fetch = require("node-fetch");
+const cache = require("./cache.js");
 
-const cdnFmt = "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/{codepoint}.png";
+const cdnFmt =
+  "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/{codepoint}.png";
 
 async function validSrc(src) {
   try {
@@ -14,14 +15,14 @@ async function validSrc(src) {
 }
 
 function validCategory(char) {
-  // Alternative to unicodedata.category(char) === "So"
-  // Check if the character is an emoji using the emoji library
-  return emoji.which(char) !== undefined;
+  const regex =
+    /[\uD800-\uDBFF][\uDC00-\uDFFF]|\p{Emoji_Presentation}|\p{Extended_Pictographic}/gu;
+  return regex.test(char);
 }
 
 async function codepoint(codes) {
   if (!codes.includes("200d")) {
-    return codes.filter(c => c !== "fe0f").join("-");
+    return codes.filter((c) => c !== "fe0f").join("-");
   }
   return codes.join("-");
 }
@@ -29,7 +30,14 @@ async function codepoint(codes) {
 async function convert(char) {
   if (validCategory(char)) {
     const name = char; // You can replace it with the appropriate name for the emoji
-    const src = cdnFmt.replace("{codepoint}", await codepoint([...char].map(c => `{cp:x}`.replace("{cp}", c.charCodeAt(0).toString(16)))));
+    const src = cdnFmt.replace(
+      "{codepoint}",
+      await codepoint(
+        [...char].map((c) =>
+          `{cp:x}`.replace("{cp}", c.charCodeAt(0).toString(16))
+        )
+      )
+    );
     if (await validSrc(src)) {
       return `<img class="emoji emoji--small" src="${src}" alt="${char}" title="${name}" aria-label="Emoji: ${name}">`;
     } else {
@@ -40,8 +48,26 @@ async function convert(char) {
       return char;
     } else {
       const shortcode = emoji.demojize(char);
-      const name = shortcode.replace(/:/g, "").replace(/_/g, " ").replace("selector", "").charAt(0).toUpperCase() + shortcode.replace(/:/g, "").replace(/_/g, " ").replace("selector", "").slice(1);
-      const src = cdnFmt.replace("{codepoint}", await codepoint([...char].map(c => `{cp:x}`.replace("{cp}", c.charCodeAt(0).toString(16)))));
+      const name =
+        shortcode
+          .replace(/:/g, "")
+          .replace(/_/g, " ")
+          .replace("selector", "")
+          .charAt(0)
+          .toUpperCase() +
+        shortcode
+          .replace(/:/g, "")
+          .replace(/_/g, " ")
+          .replace("selector", "")
+          .slice(1);
+      const src = cdnFmt.replace(
+        "{codepoint}",
+        await codepoint(
+          [...char].map((c) =>
+            `{cp:x}`.replace("{cp}", c.charCodeAt(0).toString(16))
+          )
+        )
+      );
       if (await validSrc(src)) {
         return `<img class="emoji emoji--small" src="${src}" alt="${char}" title="${name}" aria-label="Emoji: ${name}">`;
       } else {
@@ -58,3 +84,11 @@ async function convertEmoji(string) {
   }
   return x.join("");
 }
+
+module.exports = {
+  convertEmoji,
+  convert,
+  codepoint,
+  validSrc,
+  validCategory,
+};

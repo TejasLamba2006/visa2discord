@@ -40,7 +40,7 @@ class TranscriptDAO {
     this.fancy_times = fancy_times;
     this.before = before;
     this.after = after;
-    this.support_dev = support_dev;
+    this.support_dev = support_dev ;
     if (!this.timezone) {
       this.timezone = 'UTC'
     }
@@ -66,10 +66,9 @@ class TranscriptDAO {
     const guild_icon =
       this.channel.guild.icon &&
       this.channel.guild.icon.length > 2
-        ? this.channel.guild.icon
+        ? this.channel.guild.iconURL()
         : DiscordUtils.default_avatar;
 
-    const guild_name = escapeHtml(this.channel.guild.name);
     const time_now = new Date().toLocaleString(this.timezone, {
       month: 'short',
       day: 'numeric',
@@ -130,10 +129,6 @@ class TranscriptDAO {
       ['RAW_CHANNEL_TOPIC', raw_channel_topic],
     ]);
 
-    const sd = this.support_dev
-      ? '<div class="meta__support"><a href="https://www.paypal.com/paypalme/tejaslamba">DONATE</a></div>'
-      : '';
-
     let _fancy_time = '';
 
     if (this.fancy_times) {
@@ -142,7 +137,7 @@ class TranscriptDAO {
       ]);
     }
     this.html = await fillOut(this.channel.guild, total, [
-      ['SERVER_NAME', guild_name],
+      ['SERVER_NAME', escapeHtml(this.channel.guild.name)],
       ['GUILD_ID', this.channel.guild.id, PARSE_MODE_NONE],
       ['SERVER_AVATAR_URL', guild_icon, PARSE_MODE_NONE],
       ['CHANNEL_NAME', this.channel.name],
@@ -156,7 +151,6 @@ class TranscriptDAO {
       ['CHANNEL_ID', this.channel.id, PARSE_MODE_NONE],
       ['MESSAGE_PARTICIPANTS', Object.keys(metaData).length.toString(), PARSE_MODE_NONE],
       ['FANCY_TIME', _fancy_time, PARSE_MODE_NONE],
-      ['SD', sd, PARSE_MODE_NONE],
     ]);
   }
 }

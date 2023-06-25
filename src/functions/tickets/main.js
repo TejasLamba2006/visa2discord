@@ -1,7 +1,7 @@
 const Discord = require('discord.js');
 const Transcript = require('./construct/transcript.js');
 
-async function quickExport(channel, messages, guild = null, bot = null) {
+async function quickExport(channel, messages = null, guild = null, bot = null) {
   if (guild) {
     channel.guild = guild;
   }
@@ -9,7 +9,7 @@ async function quickExport(channel, messages, guild = null, bot = null) {
   const transcript = (await new Transcript({
     channel: channel,
     limit: null,
-    messages: null,
+    messages: messages,
     timezone: 'UTC',
     military_time: true,
     fancy_times: true,
@@ -60,7 +60,7 @@ async function exportChat(
     after: after,
     support_dev: support_dev,
     bot: bot
-  }).export()).html;
+  }).export());
 }
 
 async function rawExport(

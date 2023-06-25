@@ -23,18 +23,19 @@ async function fillOut(guild, base, replacements) {
       
     }
     if (mode === PARSE_MODE_MARKDOWN) {
-      v = await ParseMarkdown(v).standard_message_flow();
+      v = await new ParseMarkdown(v).standardMessageFlow();
     } else if (mode === PARSE_MODE_EMBED) {
-      v = await ParseMarkdown(v).standard_embed_flow();
+      v = await new ParseMarkdown(v).standardEmbedFlow();
     } else if (mode === PARSE_MODE_SPECIAL_EMBED) {
-      v = await ParseMarkdown(v).special_embed_flow();
+      v = await new ParseMarkdown(v).specialEmbedFlow();
     } else if (mode === PARSE_MODE_REFERENCE) {
-      v = await ParseMarkdown(v).message_reference_flow();
+      v = await new ParseMarkdown(v).messageReferenceFlow();
     } else if (mode === PARSE_MODE_EMOJI) {
-      v = await ParseMarkdown(v).special_emoji_flow();
+      v = await new ParseMarkdown(v).specialEmojiFlow();
     }
 
-    base = base.replace("{{" + k + "}}", v)
+    const regex = new RegExp("{{" + k + "}}", "g");
+    base = base.replace(regex, v);
   }
   return base;
 }

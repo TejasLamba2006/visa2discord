@@ -52,14 +52,14 @@ class Attachment {
   }
 
   async file() {
+    
     const file_icon = await this.get_file_icon();
     const file_size = this.get_file_size(this.attachments.size);
-
     this.attachments = await fillOut(this.guild, msg_attachment, [
       ["ATTACH_ICON", file_icon, PARSE_MODE_NONE],
       ["ATTACH_URL", this.attachments.url, PARSE_MODE_NONE],
       ["ATTACH_BYTES", String(file_size), PARSE_MODE_NONE],
-      ["ATTACH_FILE", String(this.attachments.filename), PARSE_MODE_NONE]
+      ["ATTACH_FILE", String(this.attachments.name), PARSE_MODE_NONE]
     ]);
   }
 
@@ -68,11 +68,12 @@ class Attachment {
       return "0 bytes";
     }
     const size_name = ["bytes", "KB", "MB"];
-    const i = Math.floor(Math.log(file_size, 1024));
+    const i = Math.floor(Math.log(file_size) / Math.log(1024)); // Corrected calculation
     const p = Math.pow(1024, i);
     const s = Math.round(file_size / p, 2);
     return `${s} ${size_name[i]}`;
   }
+  
 
   async get_file_icon() {
     const acrobat_types = ["pdf"];
