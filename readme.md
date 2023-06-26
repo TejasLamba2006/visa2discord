@@ -17,6 +17,8 @@ For your discord utilities
   - [Discord activity generator](#discord-activity-generator)
   - [Disable Buttons](#disable-buttons)
   - [Transcripts](#transcripts)
+    - [Methods](#methods)
+    - [Classes](#classes)
 - [Contributing](#contributing)
 - [License](#license)
 - [Credits](#credits)
@@ -235,6 +237,74 @@ For your discord utilities
   - [x] Mentions
   - [ ] Pins (Not Tested)
   - [ ] Threads (Not Tested)
+
+### Methods
+- `quickExport`
+  - The `quickExport` function generates a transcript of messages from a Discord channel. It takes the following parameters:
+    - `channel` (required): The channel to export the transcript from.
+    - `messages` (optional): An array of specific messages to include in the transcript. By default, it includes all messages.
+    - `guild` (optional): The guild associated with the channel, if available.
+    - `client` (optional): The Discord client used for fetching messages, if available.
+  - The function returns a Promise that resolves to the exported transcript message. If an error occurs while generating the transcript, an Error is thrown.
+  - Usage
+    ```js
+    const { AttachmentBuilder } = require('discord.js');
+    const { quickExport } = require('visa2discord');
+    const channel = client.channels.cache.get("channel_id") || message.channel;
+    const transcript = await quickTranscript(channel);
+    //Gets latest 100 messages
+    channel.send({ files: [new AttachmentBuilder(transcript, { name: 'transcript.html'})] });
+    ```
+
+- `exportChat`
+  - The `exportChat` function exports the chat transcript from a Discord channel. It is an asynchronous function that returns a Promise. It takes the following parameters:
+    - `channel` (required): The channel to export the chat from.
+    - `limit` (optional): The maximum number of messages to export. If not specified, all messages will be exported.
+    - `tz_info` (optional): The timezone information for the transcript. Defaults to 'UTC'.
+    - `guild` (optional): The guild associated with the channel, if available.
+    - `client` (optional): The Discord client object, if available.
+    - `military_time` (optional): Whether to use military time format for timestamps. Defaults to true.
+    - `fancy_times` (optional): Whether to use fancy formatting for timestamps. Defaults to true.
+    - `before` (optional): Limit the exported messages to those created before this date.
+    - `after` (optional): Limit the exported messages to those created after this date.
+    - `support_dev` (optional): Whether to include developer support information in the transcript. Defaults to true.
+  - The function returns a Promise that resolves to the exported chat transcript. If an error occurs while exporting the chat transcript, an Error is thrown.
+  - Usage
+    ```js
+    const { AttachmentBuilder } = require('discord.js');
+    const { exportChat } = require('visa2discord');
+    const channel = client.channels.cache.get("channel_id") || message.channel;
+    const transcript = await exportChat(channel);
+    channel.send({ files: [new AttachmentBuilder(Buffer.from(transcript, 'utf-8'), { name: 'transcript.html'})] });
+    ``` 
+
+- `rawExport`
+  - The `rawExport` function exports the raw chat transcript from a Discord channel. It is an asynchronous function that returns a Promise. It takes the following parameters:
+    - `channel` (required): The channel to export the chat from.
+    - `messages` (required): The specific messages to include in the export.
+    - `tz_info` (optional): The timezone information for the transcript. Defaults to 'UTC'.
+    - `guild` (optional): The guild associated with the channel, if available.
+    - `client` (optional): The Discord client object, if available.
+    - `military_time` (optional): Whether to use military time format for timestamps. Defaults to false.
+    - `fancy_times` (optional): Whether to use fancy formatting for timestamps. Defaults to true.
+    - `support_dev` (optional): Whether to include developer support information in the transcript. Defaults to true.
+
+   - The function returns a Promise that resolves to the raw HTML content of the exported chat transcript. If an error occurs while exporting the chat transcript, an Error is thrown.
+   - Usage
+    ```js
+    const { AttachmentBuilder } = require('discord.js');
+    const { rawExport } = require('visa2discord');
+    const channel = client.channels.cache.get("channel_id") || message.channel;
+    const messages = await channel.messages.fetch({ limit: 100 });
+    const transcript = await rawExport(channel, messages);
+    channel.send({ files: [new AttachmentBuilder(Buffer.from(transcript, 'utf-8'), { name: 'transcript.html'})] });
+    ``` 
+
+### Classes
+
+- `Transcript`
+  - The `Transcript` class represents a chat transcript export and extends the `TranscriptDAO` class.
+
 # Contributing
 
 - If you want to contribute to this project, you can fork this repository and make a pull request.
