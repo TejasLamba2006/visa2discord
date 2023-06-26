@@ -335,6 +335,8 @@ For your discord utilities
 
 # Changelogs
 
+- [v1.0.18]
+  - Add new feature: `transcripts` --> Docs: [Transcripts](#transcripts)
 - [v1.0.17]
   - Minor Bug Fixes
 - [v1.0.16]

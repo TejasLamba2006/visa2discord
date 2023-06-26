@@ -1,6 +1,6 @@
 {
   "name": "visa2discord",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "A package for your discord needs",
   "main": "index.js",
   "directories": {
