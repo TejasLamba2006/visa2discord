@@ -12,7 +12,8 @@
     "html": "^1.0.0",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.43",
-    "node-fetch": "^2.6.1"
+    "node-fetch": "^2.6.1",
+    "twemoji": "^14.0.2"
   },
   "scripts": {
     "start": "node ./test/index.js"
