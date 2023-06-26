@@ -23,6 +23,7 @@ const {
   PARSE_MODE_REFERENCE,
   fillOut,
 } = require("../ext/html_gen.js");
+const cache = require("../ext/cache");
 
 class MessageConstruct {
   message_html = "";
@@ -57,9 +58,9 @@ class MessageConstruct {
   }
 
   async construct_message() {
-    if (Discord.MessageType.ChannelPinnedMessage === this.message.type) {
+    if (Discord.MessageType.ChannelPinnedMessage === this.message?.type) {
       await this.build_pin();
-    } else if (Discord.MessageType.ThreadCreated === this.message.type) {
+    } else if (Discord.MessageType.ThreadCreated === this.message?.type) {
       await this.build_thread();
     } else {
       await this.build_message();
@@ -69,7 +70,7 @@ class MessageConstruct {
 
   async build_message() {
     await this.build_content();
-    await this.build_reference();
+    //await this.build_reference();
     await this.build_interaction();
     await this.build_sticker();
     await this.build_assets();
@@ -80,7 +81,7 @@ class MessageConstruct {
   _generate_message_divider_check() {
     return (
       !this.previous_message ||
-      this.message.reference !== "" ||
+      //this.message.reference !== "" ||
       this.message.interaction !== "" ||
       this.previous_message.author.id !== this.message.author.id ||
       this.message.webhookId !== null ||
@@ -102,7 +103,7 @@ class MessageConstruct {
       const avatar_url =
         this.message.author.displayAvatarURL() || DiscordUtils.default_avatar;
 
-      if (message.reference !== "" || this.message.interaction) {
+      if (this.message.interaction) {
         followup_symbol = "<div class='chatlog__followup-symbol'></div>";
       }
 
@@ -114,12 +115,12 @@ class MessageConstruct {
       const default_timestamp = time.toLocaleString(this.pytz_timezone);
 
       this.message_html += await fillOut(this.guild, start_message, [
-        ["REFERENCE_SYMBOL", this.message.reference || this.message.interaction ? followup_symbol : "", PARSE_MODE_NONE],
         [
-          "REFERENCE",
-          this.message.reference || this.message.interaction || "",
+          "REFERENCE_SYMBOL",
+          this.message.interaction ? followup_symbol : "",
           PARSE_MODE_NONE,
         ],
+        ["REFERENCE", this.message.interaction || "", PARSE_MODE_NONE],
         ["AVATAR_URL", String(avatar_url), PARSE_MODE_NONE],
         [
           "NAME_TAG",
@@ -138,7 +139,7 @@ class MessageConstruct {
         ["TIMESTAMP", String(this.message.createdTimestamp)],
         ["DEFAULT_TIMESTAMP", String(default_timestamp), PARSE_MODE_NONE],
         ["MESSAGE_ID", this.message.id],
-        ["MESSAGE_CONTENT", this.message.content, PARSE_MODE_NONE],
+        ["MESSAGE_CONTENT", this.message.content, PARSE_MODE_MARKDOWN],
         ["EMBEDS", this.embeds, PARSE_MODE_NONE],
         ["ATTACHMENTS", this.attachments, PARSE_MODE_NONE],
         ["COMPONENTS", this.components, PARSE_MODE_NONE],
@@ -163,7 +164,7 @@ class MessageConstruct {
         const avatar_url =
           xd.message.author.displayAvatarURL() || DiscordUtils.default_avatar;
 
-        if (xd.message.reference !== "" || xd.message.interaction) {
+        if (xd.message.interaction) {
           followup_symbol = "<div class='chatlog__followup-symbol'></div>";
         }
 
@@ -173,12 +174,12 @@ class MessageConstruct {
         }
         const default_timestamp = time.toLocaleString(xd.pytz_timezone);
         xd.message_html += await fillOut(xd.guild, start_message, [
-          ["REFERENCE_SYMBOL", xd.message.reference || xd.message.interaction ? followup_symbol : "", PARSE_MODE_NONE],
           [
-            "REFERENCE",
-            xd.message.reference || xd.message.interaction || "",
+            "REFERENCE_SYMBOL",
+            xd.message.interaction ? followup_symbol : "",
             PARSE_MODE_NONE,
           ],
+          ["REFERENCE", xd.message.interaction || "", PARSE_MODE_NONE],
           ["AVATAR_URL", String(avatar_url), PARSE_MODE_NONE],
           [
             "NAME_TAG",
@@ -197,7 +198,7 @@ class MessageConstruct {
           ["TIMESTAMP", String(xd.message.createdTimestamp)],
           ["DEFAULT_TIMESTAMP", String(default_timestamp), PARSE_MODE_NONE],
           ["MESSAGE_ID", xd.message.id],
-          ["MESSAGE_CONTENT", xd.message.content, PARSE_MODE_NONE],
+          ["MESSAGE_CONTENT", xd.message.content, PARSE_MODE_MARKDOWN],
           ["EMBEDS", xd.embeds, PARSE_MODE_NONE],
           ["ATTACHMENTS", xd.attachments, PARSE_MODE_NONE],
           ["COMPONENTS", xd.components, PARSE_MODE_NONE],
@@ -212,7 +213,7 @@ class MessageConstruct {
     }
     this.message_html += await fillOut(guild, message_body, [
       ["MESSAGE_ID", this.message.id],
-      ["MESSAGE_CONTENT", this.message.content, PARSE_MODE_NONE],
+      ["MESSAGE_CONTENT", this.message.content, PARSE_MODE_MARKDOWN],
       ["EMBEDS", this.embeds, PARSE_MODE_NONE],
       ["ATTACHMENTS", this.attachments, PARSE_MODE_NONE],
       ["COMPONENTS", this.components, PARSE_MODE_NONE],
@@ -262,11 +263,11 @@ class MessageConstruct {
         PARSE_MODE_NONE,
       ],
       ["MESSAGE_ID", this.message.id, PARSE_MODE_NONE],
-      [
-        "REF_MESSAGE_ID",
-        String(this.message.reference.message_id),
-        PARSE_MODE_NONE,
-      ],
+      // [
+      //   "REF_MESSAGE_ID",
+      //   String(this.message.reference.message_id),
+      //   PARSE_MODE_NONE,
+      // ],
     ]);
   }
 
@@ -314,12 +315,12 @@ class MessageConstruct {
       const default_timestamp = time.toLocaleString(this.pytz_timezone);
 
       this.message_html += await fillOut(this.guild, start_message, [
-        ["REFERENCE_SYMBOL", this.message.reference || this.message.interaction ? followup_symbol : "", PARSE_MODE_NONE],
-        [
-          "REFERENCE",
-          this.message.reference || this.message.interaction || "",
-          PARSE_MODE_NONE,
-        ],
+        //["REFERENCE_SYMBOL", this.message.reference || this.message.interaction ? followup_symbol : "", PARSE_MODE_NONE],
+        // [
+        //   "REFERENCE",
+        //   this.message.reference || this.message.interaction || "",
+        //   PARSE_MODE_NONE,
+        // ],
         ["AVATAR_URL", String(avatar_url), PARSE_MODE_NONE],
         [
           "NAME_TAG",
@@ -338,7 +339,7 @@ class MessageConstruct {
         ["TIMESTAMP", String(this.message_created_at)],
         ["DEFAULT_TIMESTAMP", String(default_timestamp), PARSE_MODE_NONE],
         ["MESSAGE_ID", this.message.id],
-        ["MESSAGE_CONTENT", this.message.content, PARSE_MODE_NONE],
+        ["MESSAGE_CONTENT", this.message.content, PARSE_MODE_MARKDOWN],
         ["EMBEDS", this.embeds, PARSE_MODE_NONE],
         ["ATTACHMENTS", this.attachments, PARSE_MODE_NONE],
         ["COMPONENTS", this.components, PARSE_MODE_NONE],
@@ -387,13 +388,13 @@ class MessageConstruct {
   }
 
   async build_content() {
-    if (!this.message.content) {
+    if (!this.message?.content) {
       this.message.content = "";
       return;
     }
 
     if (this.message.editedTimestamp) {
-      const formatted_edited_at = this.message.editedTimestamp.toLocaleString(
+      const formatted_edited_at = this.message?.editedTimestamp.toLocaleString(
         this.pytz_timezone
       );
 
@@ -420,7 +421,11 @@ class MessageConstruct {
           referenced_channel_id
         );
         const referenced_message = await referenced_channel.messages.fetch(
-          referenced_message_id
+          referenced_message_id,
+          {
+            force: true,
+            cache: false,
+          }
         );
 
         if (referenced_message) {
@@ -489,44 +494,40 @@ class MessageConstruct {
 
   async build_attachments() {
     if (this.message.attachments.size > 0) {
-      this.message.attachments.forEach(async (attachment) => {
+      for (const attachment of this.message.attachments.values()) {
         this.attachments += await new Attachment(attachment).flow();
-      });
+      }
     }
   }
 
   async build_embeds() {
     if (this.message.embeds.length > 0) {
-      this.message.embeds.forEach(async (embed) => {
+      for (const embed of this.message.embeds) {
         this.embeds += await new Embed(embed, this.guild).flow();
-      });
+      }
     }
   }
 
   async build_reactions() {
-   // console.log(this.message.reactions, "reactions");
-    if (this.message.reactions.size > 0) {
-      this.message.reactions.forEach(async (reaction) => {
+    if (this.message.reactions.cache.size > 0) {
+      for (const reaction of this.message.reactions.cache.values()) {
         this.reactions += await new Reaction(reaction, this.guild).flow();
-      });
-
-      if (this.reactions_html) {
-        this.message_html += `<div class="message__reactions">${this.reactions_html}</div>`;
       }
     }
   }
+
   set_time(message = null) {
     message = message || this.message;
-    console.log(message, "message");
-    const created_at_str = this.to_local_time_str(message.createdAt);
-    const edited_at_str = message.editedAt
-      ? this.to_local_time_str(message.editedAt)
+
+    const created_at_str = this.to_local_time_str(message?.createdAt);
+    const edited_at_str = message?.editedAt
+      ? this.to_local_time_str(message?.editedAt)
       : "";
 
     return [created_at_str, edited_at_str];
   }
   to_local_time_str(time) {
-    if (!this.message.createdAt) {
+    if (!this.message?.createdAt) {
       time = moment.tz(time, "UTC");
     }
 
@@ -541,9 +542,13 @@ class MessageConstruct {
 
   async build_components() {
     if (this.message.components.length > 0) {
-      this.message.components.forEach(async (component) => {
-        this.components += await new Component(this.message.components[0], this.guild).flow();
-      });
+      for (const component of this.message.components) {
+        const componentInstance = new Component(
+          this.message.components,
+          this.guild
+        );
+        this.components += await componentInstance.flow();
+      }
     }
   }
 }
@@ -569,9 +574,36 @@ async function convertMessageToHTML(
     await messageConstruct.construct_message();
   return { message_html, updated_meta_data };
 }
+
+async function gatherMessages(messages, guild, pytz_timezone, military_time) {
+  let message_html = "";
+  let meta_data = {};
+  let previous_message = null;
+  for (const message of messages) {
+    const messageConstruct = new MessageConstruct(
+      message,
+      previous_message,
+      pytz_timezone,
+      military_time,
+      guild,
+      meta_data
+    );
+
+    const [content_html, updated_meta_data] =
+      await messageConstruct.construct_message();
+
+    message_html += content_html;
+    previous_message = message;
+    meta_data = updated_meta_data;
+  }
+
+  message_html += "</div>";
+  return [message_html, meta_data];
+}
 module.exports = {
   convertMessageToHTML,
   MessageConstruct,
+  gatherMessages,
 };
 
 function escapeHtml(text) {

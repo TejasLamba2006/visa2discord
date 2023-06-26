@@ -27,12 +27,13 @@ class ParseMentionFlow {
     this.guild = guild;
   }
 
-  flow() {
+  async flow() {
+    if (!this.content) return this.content;
     this.escapeMentions();
     this.escapeMentions();
     this.unescapeMentions();
     this.channelMention();
-    this.memberMention();
+    await this.memberMention();
     this.roleMention();
     this.timeMention();
 
@@ -53,13 +54,25 @@ class ParseMentionFlow {
   }
 
   unescapeMentions() {
-    this.content = this.content.replace(new RegExp(ParseMentionFlow.ESCAPE_LT, "g"), "<");
-    this.content = this.content.replace(new RegExp(ParseMentionFlow.ESCAPE_GT, "g"), ">");
-    this.content = this.content.replace(new RegExp(ParseMentionFlow.ESCAPE_AMP, "g"), "&");
+    this.content = this.content.replace(
+      new RegExp(ParseMentionFlow.ESCAPE_LT, "g"),
+      "<"
+    );
+    this.content = this.content.replace(
+      new RegExp(ParseMentionFlow.ESCAPE_GT, "g"),
+      ">"
+    );
+    this.content = this.content.replace(
+      new RegExp(ParseMentionFlow.ESCAPE_AMP, "g"),
+      "&"
+    );
   }
 
   channelMention() {
-    const holder = [ParseMentionFlow.REGEX_CHANNELS, ParseMentionFlow.REGEX_CHANNELS_2];
+    const holder = [
+      ParseMentionFlow.REGEX_CHANNELS,
+      ParseMentionFlow.REGEX_CHANNELS_2,
+    ];
     for (const regex of holder) {
       let match = this.content.match(regex);
       while (match) {
@@ -77,7 +90,10 @@ class ParseMentionFlow {
   }
 
   roleMention() {
-    const holder = [ParseMentionFlow.REGEX_ROLES, ParseMentionFlow.REGEX_ROLES_2];
+    const holder = [
+      ParseMentionFlow.REGEX_ROLES,
+      ParseMentionFlow.REGEX_ROLES_2,
+    ];
     for (const regex of holder) {
       let match = this.content.match(regex);
       while (match) {
@@ -85,7 +101,9 @@ class ParseMentionFlow {
         const role = this.guild.roles.cache.get(roleId);
 
         const replacement = role
-          ? `<span style="color: ${role.color.toString(16).padStart(6, "0")}">@${role.name}</span>`
+          ? `<span style="color: ${role.color
+              .toString(16)
+              .padStart(6, "0")}">@${role.name}</span>`
           : "@deleted-role";
 
         this.content = this.content.replace(match[0], replacement);
@@ -94,17 +112,19 @@ class ParseMentionFlow {
     }
   }
 
-  memberMention() {
-    const holder = [ParseMentionFlow.REGEX_MEMBERS, ParseMentionFlow.REGEX_MEMBERS_2];
+  async memberMention() {
+    const holder = [
+      ParseMentionFlow.REGEX_MEMBERS,
+      ParseMentionFlow.REGEX_MEMBERS_2,
+    ];
     for (const regex of holder) {
       let match = this.content.match(regex);
       while (match) {
-        const memberId = parseInt(match[1]);
-        const member = this.guild.members.cache.get(memberId);
-
+        const memberId = String(match[1]);
+        const member = await this.guild.members.fetch(memberId);
         let replacement;
         if (member) {
-          replacement = `<span class="mention" title="${memberId}">@${member.displayName}</span>`;
+          replacement = `<span class="mention" title="${memberId}">@${member.user.username}</span>`;
         } else {
           replacement = `<span class="mention" title="${memberId}">&lt;@${memberId}></span>`;
         }
@@ -117,30 +137,38 @@ class ParseMentionFlow {
 
   timeMention() {
     const holder = ParseMentionFlow.REGEX_TIME_HOLDER;
-    const timezone = this.guild.timezone;
 
     for (const [regex, strf] of holder) {
       let match = this.content.match(regex);
       while (match) {
         const timestamp = parseInt(match[1]) * 1000;
-        const time = new Date(timestamp).toLocaleString("en-US", {
-          timeZone: timezone,
-        });
-        const uiTime = new Date(timestamp).toLocaleString("en-US", {
-          timeZone: timezone,
-          hour12: false,
-          hour: "numeric",
-          minute: "numeric",
-        });
-        const tooltipTime = new Date(timestamp).toLocaleString("en-US", {
-          timeZone: timezone,
-          weekday: "long",
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-          hour: "numeric",
-          minute: "numeric",
-        });
+        const time = new Date(timestamp).toLocaleString(
+          this.guild.preferredLocale,
+          {
+            timeZone: timezone,
+          }
+        );
+        const uiTime = new Date(timestamp).toLocaleString(
+          this.guild.preferredLocale,
+          {
+            timeZone: timezone,
+            hour12: false,
+            hour: "numeric",
+            minute: "numeric",
+          }
+        );
+        const tooltipTime = new Date(timestamp).toLocaleString(
+          this.guild.preferredLocale,
+          {
+            timeZone: timezone,
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+            hour: "numeric",
+            minute: "numeric",
+          }
+        );
 
         const original = match[0].replace(/&lt;/g, "<").replace(/&gt;/g, ">");
         const replacement = `<span class="unix-timestamp" data-timestamp="${tooltipTime}" raw-content="${original}">${uiTime}</span>`;

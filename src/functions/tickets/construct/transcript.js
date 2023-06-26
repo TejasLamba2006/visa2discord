@@ -2,7 +2,7 @@ const html = require('html');
 const moment = require('moment-timezone');
 const discord = require('discord.js');
 
-const { MessageConstruct } = require('./message');
+const { gatherMessages } = require('./message');
 const Component = require('./assets/components.js');
 const clearCache = require('../ext/cache');
 const passBot = require('../parse/mention');
@@ -197,28 +197,5 @@ function escapeHtml(text) {
   });
 }
 
-async function gatherMessages(messages, guild, pytz_timezone, military_time) {
-  let message_html = "";
-  let meta_data = {};
-  let previous_message = null;
-  for (const message of messages) {
-    const messageConstruct = new MessageConstruct(
-      message,
-      previous_message,
-      pytz_timezone,
-      military_time,
-      guild,
-      meta_data
-    );
-  
-    const [content_html, updated_meta_data] = await messageConstruct.construct_message();
-    
-    message_html += content_html;
-    previous_message = message;
-    meta_data = updated_meta_data;
-  }
 
-  message_html += "</div>";
-  return [message_html, meta_data];
-}
 

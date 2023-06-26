@@ -1,5 +1,4 @@
-const { convertEmoji } = require('../ext/emoji_convert');
-
+const { convertEmoji } = require("../ext/emoji_convert");
 class ParseMarkdown {
   constructor(content) {
     this.content = content;
@@ -59,10 +58,22 @@ class ParseMarkdown {
 
   async parseEmoji() {
     const holder = [
-      [/<:.*?:(\d*)>/g, '<img class="emoji emoji--small" src="https://cdn.discordapp.com/emojis/$1.png">'],
-      [/<a:.*?:(\d*)>/g, '<img class="emoji emoji--small" src="https://cdn.discordapp.com/emojis/$1.gif">'],
-      [/&lt;:.*?:(\d*)&gt;/g, '<img class="emoji emoji--small" src="https://cdn.discordapp.com/emojis/$1.png">'],
-      [/&lt;a:.*?:(\d*)&gt;/g, '<img class="emoji emoji--small" src="https://cdn.discordapp.com/emojis/$1.gif">'],
+      [
+        /<:.*?:(\d*)>/g,
+        '<img class="emoji emoji--small" src="https://cdn.discordapp.com/emojis/$1.png">',
+      ],
+      [
+        /<a:.*?:(\d*)>/g,
+        '<img class="emoji emoji--small" src="https://cdn.discordapp.com/emojis/$1.gif">',
+      ],
+      [
+        /&lt;:.*?:(\d*)&gt;/g,
+        '<img class="emoji emoji--small" src="https://cdn.discordapp.com/emojis/$1.png">',
+      ],
+      [
+        /&lt;a:.*?:(\d*)&gt;/g,
+        '<img class="emoji emoji--small" src="https://cdn.discordapp.com/emojis/$1.gif">',
+      ],
     ];
 
     this.content = await convertEmoji(this.content);
@@ -72,10 +83,7 @@ class ParseMarkdown {
       let match = pattern.exec(this.content);
       while (match) {
         const emojiId = match[1];
-        this.content = this.content.replace(
-          match[0],
-          r.replace("%s", emojiId)
-        );
+        this.content = this.content.replace(match[0], r.replace("$1", emojiId));
         match = pattern.exec(this.content);
       }
     }
@@ -84,8 +92,8 @@ class ParseMarkdown {
   parseNormalMarkdown() {
     const holder = [
       [/__([^_]+)__/g, '<span style="text-decoration: underline">$1</span>'],
-      [/\*\*([^*]+)\*\*/g, '<strong>$1</strong>'],
-      [/\*([^*]+)\*/g, '<em>$1</em>'],
+      [/\*\*([^*]+)\*\*/g, "<strong>$1</strong>"],
+      [/\*([^*]+)\*/g, "<em>$1</em>"],
       [/~~([^~]+)~~/g, '<span style="text-decoration: line-through">$1</span>'],
       [
         /\|\|([^\|]+)\|\|/g,
@@ -100,7 +108,7 @@ class ParseMarkdown {
         const affectedText = match[1];
         this.content = this.content.replace(
           match[0],
-          r.replace("%s", affectedText)
+          r.replace("$1", affectedText)
         );
         match = pattern.exec(this.content);
       }
@@ -151,12 +159,12 @@ class ParseMarkdown {
       );
       match = pattern.exec(this.content);
     }
-  
+
     const lines = this.content.split("\n");
     let quoteBuffer = null;
     let newContent = "";
     const quotePattern = /^>\s(.+)/;
-  
+
     if (lines.length === 1) {
       if (quotePattern.test(lines[0])) {
         this.content = `<div class="quote">${lines[0].substring(2)}</div>`;
@@ -165,7 +173,7 @@ class ParseMarkdown {
       this.content = lines[0];
       return this.content;
     }
-  
+
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       if (quotePattern.test(line) && quoteBuffer) {
@@ -182,15 +190,15 @@ class ParseMarkdown {
         quoteBuffer = "";
       }
     }
-  
+
     if (quoteBuffer) {
       newContent += `<div class="quote">${quoteBuffer}</div>`;
     }
-  
+
     this.content = newContent;
     return this.content;
   }
-  
+
   httpsHttpLinks() {
     const pattern = new RegExp(
       /(?<!src=)(?<!href=)(?<!\!)(https?:\/\/[^\s/$.?#].[^\s]*)/gi
@@ -205,11 +213,11 @@ class ParseMarkdown {
 module.exports = ParseMarkdown;
 function escapeHtml(text) {
   const map = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;',
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;",
   };
   return text.replace(/[&<>"']/g, function (m) {
     return map[m];

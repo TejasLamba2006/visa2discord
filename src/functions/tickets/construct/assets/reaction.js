@@ -1,6 +1,5 @@
-const { convert_emoji } = require('../../ext/emoji_convert.js');
+const { convertEmoji } = require('../../ext/emoji_convert.js');
 const { fillOut, emoji, custom_emoji, PARSE_MODE_NONE } = require('../../ext/html_gen.js');
-
 class Reaction {
   constructor(reaction, guild) {
     this.reaction = reaction;
@@ -13,9 +12,8 @@ class Reaction {
   }
 
   async build_reaction() {
-    if (":" in String(this.reaction.emoji)) {
-      const emoji_animated = /&lt;a:.*:.*&gt;/;
-      if (emoji_animated.test(String(this.reaction.emoji))) {
+    if (this.reaction._emoji.id) {
+      if (this.reaction._emoji.animated) {
         await this.create_discord_reaction("gif");
       } else {
         await this.create_discord_reaction("png");
@@ -26,17 +24,15 @@ class Reaction {
   }
 
   async create_discord_reaction(emoji_type) {
-    const pattern = /:.*:(\d*)/;
-    const emoji_id = String(this.reaction.emoji).match(pattern)[1];
     this.reaction = await fillOut(this.guild, custom_emoji, [
-      ["EMOJI", String(emoji_id), PARSE_MODE_NONE],
+      ["EMOJI", String(this.reaction._emoji.id), PARSE_MODE_NONE],
       ["EMOJI_COUNT", String(this.reaction.count), PARSE_MODE_NONE],
       ["EMOJI_FILE", emoji_type, PARSE_MODE_NONE]
     ]);
   }
 
   async create_standard_emoji() {
-    const react_emoji = await convert_emoji(this.reaction.emoji);
+    const react_emoji = await convertEmoji(this.reaction.emoji.name);
     this.reaction = await fillOut(this.guild, emoji, [
       ["EMOJI", String(react_emoji), PARSE_MODE_NONE],
       ["EMOJI_COUNT", String(this.reaction.count), PARSE_MODE_NONE]
