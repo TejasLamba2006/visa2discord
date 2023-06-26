@@ -24,7 +24,7 @@ module.exports = async () => {
         console.log('\x1b[36m' + '|             Run "npm i visa2discord@latest"         |')
         console.log('\x1b[36m' + '|                    to update!                       |')
         console.log('\x1b[37m' + `|          View the full changelog here:              |`)
-        console.log('\x1b[31m' + '| https://www.npmjs.com/package/visa2discord#changelog|')
+        console.log('\x1b[31m' + `| https://github.com/The-Rainbow-Studios/visa2discord/releases/tag/${change}|`)
         console.log('\x1b[32m' + '-------------------------------------------------------\x1b[37m')
         console.log('\n\n')
     }
