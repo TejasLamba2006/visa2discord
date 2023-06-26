@@ -393,17 +393,17 @@ class MessageConstruct {
       return;
     }
 
-    if (this.message.editedTimestamp) {
-      const formatted_edited_at = this.message?.editedTimestamp.toLocaleString(
-        this.pytz_timezone
-      );
+    // if (this.message.editedTimestamp) {
+    //   const formatted_edited_at = this.message?.editedTimestamp.toLocaleString(
+    //     this.pytz_timezone
+    //   );
 
-      const edited_indicator = this.message.editedTimestamp
-        ? `<span class="edited-indicator"> (edited: ${formatted_edited_at})</span>`
-        : "";
+    //   const edited_indicator = this.message.editedTimestamp
+    //     ? `<span class="edited-indicator"> (edited: ${formatted_edited_at})</span>`
+    //     : "";
 
-      this.message_html += `<div class="message__content">${this.message.content}${edited_indicator}</div>`;
-    }
+    //   this.message_html += `<div class="message__content">${this.message.content}${edited_indicator}</div>`;
+    // }
   }
 
   async build_reference() {

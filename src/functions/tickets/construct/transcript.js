@@ -17,9 +17,29 @@ const {
   PARSE_MODE_NONE,
 } = require('../ext/html_gen.js');
 
+/**
+ * Data Access Object for chat transcript export.
+ */
 class TranscriptDAO {
+   /**
+   * The HTML content of the chat transcript.
+   * @type {string}
+   */
   html;
 
+/**
+   * Create a new TranscriptDAO instance.
+   * @param {Channel} channel - The channel to export the chat from.
+   * @param {number|string} limit - The maximum number of messages to include in the export.
+   * @param {Array<Message>|null} messages - The specific messages to include in the export. Defaults to null.
+   * @param {string} timezone - The timezone information for the transcript.
+   * @param {boolean} military_time - Whether to use military time format for timestamps.
+   * @param {boolean} fancy_times - Whether to use fancy formatting for timestamps.
+   * @param {Date|null} before - The date to limit messages before. Defaults to null.
+   * @param {Date|null} after - The date to limit messages after. Defaults to null.
+   * @param {boolean} support_dev - Whether to include developer support information in the transcript.
+   * @param {Client|null} client - The Discord client object. Defaults to null.
+   */
   constructor(
     channel,
     limit,
@@ -30,7 +50,7 @@ class TranscriptDAO {
     before,
     after,
     support_dev,
-    bot
+    client
   ) {
     this.channel = channel.channel;
     this.messages = messages;
@@ -44,11 +64,16 @@ class TranscriptDAO {
     if (!this.timezone) {
       this.timezone = 'UTC'
     }
-    if (bot) {
-      passBot(bot);
+    if (client) {
+      passBot(client);
     }
   }
-
+/**
+   * Build and export the chat transcript.
+   * @async
+   * @returns {Promise<string>} A Promise that resolves to the HTML content of the exported chat transcript.
+   * @private
+   */
   async buildTranscript() {
     const [messageHtml, metaData] = await gatherMessages(
       this.messages,
@@ -155,7 +180,16 @@ class TranscriptDAO {
   }
 }
 
+/**
+ * Represents a chat transcript export.
+ * @extends TranscriptDAO
+ */
 class Transcript extends TranscriptDAO {
+  /**
+   * Export the chat transcript.
+   * @async
+   * @returns {Promise<Transcript>} A Promise that resolves to the exported chat transcript.
+   */
   async export() {
     if (!this.messages) {
       this.messages = await this.channel.messages.fetch({

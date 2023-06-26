@@ -27,27 +27,27 @@ class Attachment {
 
   async image() {
     this.attachments = await fillOut(this.guild, img_attachment, [
-      ["ATTACH_URL", this.attachments.proxy_url, PARSE_MODE_NONE],
-      ["ATTACH_URL_THUMB", this.attachments.proxy_url, PARSE_MODE_NONE]
+      ["ATTACH_URL", this.attachments.proxyURL, PARSE_MODE_NONE],
+      ["ATTACH_URL_THUMB", this.attachments.proxyURL, PARSE_MODE_NONE]
     ]);
   }
 
   async video() {
+    
     this.attachments = await fillOut(this.guild, video_attachment, [
-      ["ATTACH_URL", this.attachments.proxy_url, PARSE_MODE_NONE]
+      ["ATTACH_URL", this.attachments.proxyURL, PARSE_MODE_NONE]
     ]);
   }
 
   async audio() {
     const file_icon = DiscordUtils.file_attachment_audio;
     const file_size = this.get_file_size(this.attachments.size);
-
     this.attachments = await fillOut(this.guild, audio_attachment, [
       ["ATTACH_ICON", file_icon, PARSE_MODE_NONE],
       ["ATTACH_URL", this.attachments.url, PARSE_MODE_NONE],
       ["ATTACH_BYTES", String(file_size), PARSE_MODE_NONE],
-      ["ATTACH_AUDIO", this.attachments.proxy_url, PARSE_MODE_NONE],
-      ["ATTACH_FILE", String(this.attachments.filename), PARSE_MODE_NONE]
+      ["ATTACH_AUDIO", this.attachments.proxyURL, PARSE_MODE_NONE],
+      ["ATTACH_FILE", String(this.attachments.name), PARSE_MODE_NONE]
     ]);
   }
 

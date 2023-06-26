@@ -6,8 +6,8 @@ class ParseMarkdown {
 
   async standardMessageFlow() {
     this.httpsHttpLinks();
-    this.parseNormalMarkdown();
     this.parseCodeBlockMarkdown();
+    this.parseNormalMarkdown();
     await this.parseEmoji();
 
     return this.content;
@@ -100,20 +100,38 @@ class ParseMarkdown {
         '<span class="spoiler spoiler--hidden" onclick="showSpoiler(event, this)"> <span class="spoiler-text">$1</span></span>',
       ],
     ];
-
+  
+    const codeRegex = /<code>(.*?)<\/code>/gs;
+    const codeMatches = Array.from(this.content.matchAll(codeRegex), (match) => match[0]);
+    const codePlaceholders = codeMatches.map((code, index) => `__CODEBLOCK_${index}__`);
+    let transformedContent = this.content;
+  
+    // Replace code blocks with placeholders
+    for (let i = 0; i < codeMatches.length; i++) {
+      transformedContent = transformedContent.replace(codeMatches[i], codePlaceholders[i]);
+    }
+  
+    // Apply transformations outside code blocks
     for (const [p, r] of holder) {
       const pattern = new RegExp(p, "g");
-      let match = pattern.exec(this.content);
+      let match = pattern.exec(transformedContent);
       while (match) {
         const affectedText = match[1];
-        this.content = this.content.replace(
-          match[0],
-          r.replace("$1", affectedText)
-        );
-        match = pattern.exec(this.content);
+        transformedContent = transformedContent.replace(match[0], r.replace("$1", affectedText));
+        match = pattern.exec(transformedContent);
       }
     }
+  
+    // Restore code blocks from placeholders
+    for (let i = 0; i < codePlaceholders.length; i++) {
+      transformedContent = transformedContent.replace(codePlaceholders[i], codeMatches[i]);
+    }
+  
+    this.content = transformedContent;
   }
+  
+  
+  
 
   parseCodeBlockMarkdown(options = { reference: false }) {
     const holder = [

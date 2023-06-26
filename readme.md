@@ -16,6 +16,7 @@ For your discord utilities
   - [Discord Timestamp](#discord-timestamp)
   - [Discord activity generator](#discord-activity-generator)
   - [Disable Buttons](#disable-buttons)
+  - [Transcripts](#transcripts)
 - [Contributing](#contributing)
 - [License](#license)
 - [Credits](#credits)
@@ -210,6 +211,30 @@ For your discord utilities
   const message = await channel.send({ content: 'This is a test message', components: [row] });
   message.edit({ components: disableButtons(message) });
   ```
+
+## Transcripts
+- The `transcripts` function is used to generate a transcript of a Discord channel
+- <summary> Screenshots </summary>
+  <details>
+    Discord Channel
+    <img src="https://cdn.discordapp.com/attachments/1111682190573588551/1122858433402654791/image.png" alt="Discord Channel" />
+  </details>
+  <details>
+    Generated Transcript
+    <img src="https://cdn.discordapp.com/attachments/1111682190573588551/1122858338338746498/image.png" alt="Generated Transcript" />
+  </details>
+  - Supports 
+    - [x] Discord flavored markdown
+    - [x] Embeds
+    - [ ] System Messages (Not Tested)
+    - [ ] Slash Commands (Not Tested)
+    - [x] Buttons
+    - [x] Select Menus
+    - [x] Reactions
+    - [x] Attachments (ANY)
+    - [x] Mentions
+    - [ ] Pins (Not Tested)
+    - [ ] Threads (Not Tested)
 # Contributing
 
 - If you want to contribute to this project, you can fork this repository and make a pull request.
