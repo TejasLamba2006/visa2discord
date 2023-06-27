@@ -6,9 +6,6 @@
   "directories": {
     "test": "test"
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/"
-  },
   "dependencies": {
     "discord.js": "^14.11.0",
     "emoji": "^0.3.2",
