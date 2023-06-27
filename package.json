@@ -6,9 +6,6 @@
   "directories": {
     "test": "test"
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
   "dependencies": {
     "discord.js": "^14.11.0",
     "emoji": "^0.3.2",
@@ -23,13 +20,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/The-Rainbow-Studios/visa2discord.git"
+    "url": "git+https://github.com/TejasLamba2006/visa2discord.git"
   },
   "keywords": [],
   "author": "TejasLamba2006",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/The-Rainbow-Studios/visa2discord/issues"
+    "url": "https://github.com/TejasLamba2006/visa2discord/issues"
   },
-  "homepage": "https://github.com/The-Rainbow-Studios/visa2discord#readme"
+  "homepage": "https://github.com/TejasLamba2006/visa2discord#readme"
 }
