@@ -335,18 +335,7 @@ For your discord utilities
 
 # Changelogs
 
-- [v1.0.18]
-  - Add new feature: `transcripts` --> Docs: [Transcripts](#transcripts)
-- [v1.0.17]
-  - Minor Bug Fixes
-- [v1.0.16]
-  - Added `disableButtons` function: This function is used to disable all buttons in a message
-  - Improved jsDocs
-- [v1.0.15]
-  - Added `generateActivity` function: This function is used to generate a discord activity
-  - Fixed typo in `checkUdates.js`
-  - Added jsDoc for each function
-
+- Moved to relases on github.com
 # End
 
 - Thanks for reading this readme.md file.
