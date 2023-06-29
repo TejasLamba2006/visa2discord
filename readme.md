@@ -235,8 +235,8 @@ For your discord utilities
   - [x] Reactions
   - [x] Attachments (ANY)
   - [x] Mentions
-  - [ ] Pins (Not Tested)
-  - [ ] Threads (Not Tested)
+  - [x] Pins
+  - [ ] Threads
 
 ### Methods
 - `quickExport`
