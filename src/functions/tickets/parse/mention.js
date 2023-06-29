@@ -76,7 +76,7 @@ class ParseMentionFlow {
     for (const regex of holder) {
       let match = this.content.match(regex);
       while (match) {
-        const channelId = parseInt(match[1]);
+        const channelId = String(match[1]);
         const channel = this.guild.channels.cache.get(channelId);
 
         const replacement = channel
@@ -97,13 +97,10 @@ class ParseMentionFlow {
     for (const regex of holder) {
       let match = this.content.match(regex);
       while (match) {
-        const roleId = parseInt(match[1]);
+        const roleId = String(match[1]);
         const role = this.guild.roles.cache.get(roleId);
-
         const replacement = role
-          ? `<span style="color: ${role.color
-              .toString(16)
-              .padStart(6, "0")}">@${role.name}</span>`
+          ? `<span class="mention" style="color: ${hexToRgba(role.hexColor)}; background-color:${hexToRgba(role.hexColor, 0.1)};  transition: background-color 0.3s ease;" onmouseover="this.style.backgroundColor='${hexToRgba(role.hexColor, 0.5)}'" onmouseout="this.style.backgroundColor='${hexToRgba(role.hexColor, 0.1)}'">@${role.name}</span>`
           : "@deleted-role";
 
         this.content = this.content.replace(match[0], replacement);
@@ -141,7 +138,7 @@ class ParseMentionFlow {
     for (const [regex, strf] of holder) {
       let match = this.content.match(regex);
       while (match) {
-        const timestamp = parseInt(match[1]) * 1000;
+        const timestamp = String(match[1]) * 1000;
         const time = new Date(timestamp).toLocaleString(
           this.guild.preferredLocale,
           {
@@ -181,3 +178,15 @@ class ParseMentionFlow {
 }
 
 module.exports = ParseMentionFlow;
+
+function hexToRgba(hexCode, alpha = 1.0) {
+  hexCode = hexCode.replace('#', '');
+
+  const red = parseInt(hexCode.substr(0, 2), 16);
+  const green = parseInt(hexCode.substr(2, 2), 16);
+  const blue = parseInt(hexCode.substr(4, 2), 16);
+
+  alpha = parseFloat(alpha);
+
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+}

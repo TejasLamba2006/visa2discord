@@ -19,7 +19,7 @@ const client = new Discord.Client({
 client.on('ready', async () => {
     console.log(`Logged in as ${client.user.tag}!`);
     const test = require('../src/functions/tickets/main.js');
-    const channel = await client.channels.fetch('1122849770411655208');
+    const channel = await client.channels.fetch('1123861563141533754');
     const allMessages  = new Discord.Collection();
   let messages = await channel.messages.fetch({ limit: 100, cache: false,
     force: true, });
@@ -38,7 +38,7 @@ const trsa = await test.quickExport(channel).catch(console.error);
 channel.send({ files: [new Discord.AttachmentBuilder(trsa, { name: `xd.html` })] })
 });
 //login to discord with your app's token
-client.login('MTEwOTA2NTQ0MjMwNTI1MzM4Ng.GGHwVZ.8PIIyMLC2vlwdcJ7Q0Nz-U9WzeyMrp8msU3wkQ');
+client.login('MTEwOTA2NTQ0MjMwNTI1MzM4Ng.GYDj8y.TItn1WO2rOYnoxHAJMOhZhdOlv-Oz1LD_1AxSw');
 //when the bot receives a message
 
 

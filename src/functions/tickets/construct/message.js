@@ -1,6 +1,6 @@
 const Discord = require("discord.js");
 const moment = require("moment-timezone");
-const DiscordUtils = require("../ext/discord_utils");
+const { DiscordUtils } = require("../ext/discord_utils");
 const { Attachment } = require("./assets/attachment");
 const { Embed } = require("./assets/embed");
 const { Reaction } = require("./assets/reaction");
@@ -41,7 +41,7 @@ class MessageConstruct {
     guild,
     meta_data
   ) {
-    this.message = message[1];
+    this.message = message[1] || message;
     this.previous_message = previous_message;
     this.pytz_timezone = pytz_timezone;
     this.military_time = military_time;
@@ -70,7 +70,7 @@ class MessageConstruct {
 
   async build_message() {
     await this.build_content();
-    //await this.build_reference();
+    await this.build_reference();
     await this.build_interaction();
     await this.build_sticker();
     await this.build_assets();
@@ -81,9 +81,9 @@ class MessageConstruct {
   _generate_message_divider_check() {
     return (
       !this.previous_message ||
-      //this.message.reference !== "" ||
+      this.message.reference !== "" ||
       this.message.interaction !== "" ||
-      this.previous_message.author.id !== this.message.author.id ||
+      this.previous_message.author?.id !== this.message.author.id ||
       this.message.webhookId !== null ||
       this.message.createdTimestamp >
         this.previous_message.createdTimestamp + 4 * 60 * 1000
@@ -103,7 +103,7 @@ class MessageConstruct {
       const avatar_url =
         this.message.author.displayAvatarURL() || DiscordUtils.default_avatar;
 
-      if (this.message.interaction) {
+      if (this.message.reference || this.message.interaction) {
         followup_symbol = "<div class='chatlog__followup-symbol'></div>";
       }
 
@@ -164,7 +164,7 @@ class MessageConstruct {
         const avatar_url =
           xd.message.author.displayAvatarURL() || DiscordUtils.default_avatar;
 
-        if (xd.message.interaction) {
+        if (xd.message.reference ||xd.message.interaction) {
           followup_symbol = "<div class='chatlog__followup-symbol'></div>";
         }
 
@@ -176,10 +176,10 @@ class MessageConstruct {
         xd.message_html += await fillOut(xd.guild, start_message, [
           [
             "REFERENCE_SYMBOL",
-            xd.message.interaction ? followup_symbol : "",
+            xd.message.reference || xd.message.interaction ? followup_symbol : "",
             PARSE_MODE_NONE,
           ],
-          ["REFERENCE", xd.message.interaction || "", PARSE_MODE_NONE],
+          ["REFERENCE", xd.message.reference || xd.message.interaction || "", PARSE_MODE_NONE],
           ["AVATAR_URL", String(avatar_url), PARSE_MODE_NONE],
           [
             "NAME_TAG",
@@ -256,18 +256,18 @@ class MessageConstruct {
     this.message_html += await fillOut(this.guild, message_pin, [
       ["PIN_URL", DiscordUtils.pinned_message_icon, PARSE_MODE_NONE],
       ["USER_COLOUR", await this._gather_user_colour(this.message.author)],
-      ["NAME", String(escapeHtml(this.message.author.display_name))],
+      ["NAME", String(escapeHtml(this.message.author.username))],
       [
         "NAME_TAG",
         `${this.message.author.username}#${this.message.author.discriminator}`,
         PARSE_MODE_NONE,
       ],
       ["MESSAGE_ID", this.message.id, PARSE_MODE_NONE],
-      // [
-      //   "REF_MESSAGE_ID",
-      //   String(this.message.reference.message_id),
-      //   PARSE_MODE_NONE,
-      // ],
+      [
+        "REF_MESSAGE_ID",
+        String(this.message.reference.messageId),
+        PARSE_MODE_NONE,
+      ],
     ]);
   }
 
@@ -315,12 +315,12 @@ class MessageConstruct {
       const default_timestamp = time.toLocaleString(this.pytz_timezone);
 
       this.message_html += await fillOut(this.guild, start_message, [
-        //["REFERENCE_SYMBOL", this.message.reference || this.message.interaction ? followup_symbol : "", PARSE_MODE_NONE],
-        // [
-        //   "REFERENCE",
-        //   this.message.reference || this.message.interaction || "",
-        //   PARSE_MODE_NONE,
-        // ],
+        ["REFERENCE_SYMBOL", this.message.reference || this.message.interaction ? followup_symbol : "", PARSE_MODE_NONE],
+        [
+          "REFERENCE",
+          this.message.reference || this.message.interaction || "",
+          PARSE_MODE_NONE,
+        ],
         ["AVATAR_URL", String(avatar_url), PARSE_MODE_NONE],
         [
           "NAME_TAG",
@@ -406,84 +406,110 @@ class MessageConstruct {
     // }
   }
 
+  setEditAt(messageEditedAt) {
+    return `<span class="chatlog__reference-edited-timestamp" title="${messageEditedAt}">(edited)</span>`;
+  }
+  
+
   async build_reference() {
-    if (
-      this.message.reference &&
-      this.message.type === Discord.MessageType.Reply
-    ) {
-      const referenced_message_id = this.message.reference.messageId;
-      const referenced_channel_id = this.message.reference.channelId;
-
-      let referenced_message_html = "";
-
-      if (referenced_channel_id && referenced_message_id) {
-        const referenced_channel = await this.guild.channels.fetch(
-          referenced_channel_id
-        );
-        const referenced_message = await referenced_channel.messages.fetch(
-          referenced_message_id,
-          {
-            force: true,
-            cache: false,
-          }
-        );
-
-        if (referenced_message) {
-          const referenced_message_construct = new MessageConstruct(
-            referenced_message,
-            this.previous_message,
-            this.pytz_timezone,
-            this.military_time,
-            this.guild,
-            this.meta_data
-          );
-          [referenced_message_html, this.meta_data] =
-            await referenced_message_construct.construct_message();
-        }
-      }
-
-      if (referenced_message_html) {
-        this.message_html += `<div class="message__reference">${referenced_message_html}</div>`;
-      } else {
-        this.message_html += `<div class="message__reference">${message_reference_unknown}</div>`;
-      }
+    if (!this.message.reference) {
+      this.message.reference = "";
+      return;
     }
+    let message
+    try {
+      message = await this.message.channel.messages.fetch(this.message.reference.messageId);
+    } catch (error) {
+      this.message.reference = "";
+      if (error.code === 10008) {
+        this.message.reference = message_reference_unknown;
+      }
+      return;
+    }
+  
+    const isBot = this._gather_user_bot(message.author);
+    const userColour = await this._gather_user_colour(message.author);
+  
+    if (!message.content && !message.interaction && message.attachments && message.attachments.size > 0 && message.embeds.length === 0) {
+      message.content = "Click to see attachment";
+    } else if (!message.content && message.interaction) {
+      message.content = "Click to see command";
+    } else if(!message.content && message.embeds.length > 0) {
+      message.content = "Click to see embed";
+    } else if (!message.content) {
+      message.content = "Click to see message";
+    }
+  
+    let icon = DiscordUtils.button_external_link;
+    if (!message.interaction && (message.embeds.length > 0 || message.attachments.size > 0)) {
+      icon = DiscordUtils.reference_attachment_icon;
+    } else if (message.interaction) {
+      icon = DiscordUtils.interaction_command_icon;
+    }
+  
+    const [_, messageEditedAt] = this.set_time(message);
+  
+    if (messageEditedAt) {
+      messageEditedAt = this.setEditAt(messageEditedAt);
+    }
+  
+    const avatarUrl = message.author.displayAvatarURL() || DiscordUtils.default_avatar;
+    this.message.reference = await fillOut(this.guild, message_reference, [
+      ["AVATAR_URL", String(avatarUrl), PARSE_MODE_NONE],
+      ["BOT_TAG", isBot, PARSE_MODE_NONE],
+      ["NAME_TAG", `${message.author.username}#${message.author.discriminator}`, PARSE_MODE_NONE],
+      ["NAME", String(escapeHtml(message.author.username))],
+      ["USER_COLOUR", userColour, PARSE_MODE_NONE],
+      ["CONTENT", message.content, PARSE_MODE_REFERENCE],
+      ["EDIT", messageEditedAt, PARSE_MODE_NONE],
+      ["ICON", icon, PARSE_MODE_NONE],
+      ["USER_ID", String(message.author.id), PARSE_MODE_NONE],
+      ["MESSAGE_ID", String(this.message.reference.messageId), PARSE_MODE_NONE],
+    ]);
   }
-
+  
   async build_interaction() {
-    if (this.message.interaction) {
-      const interaction_user_id = this.message.interaction.user.id;
-      const interaction_user = await this.guild.members.fetch(
-        interaction_user_id
-      );
-      const interaction_user_name = interaction_user
-        ? interaction_user.username
-        : "";
-
-      const interaction_type = this.message.interaction.type;
-      let interaction_text = "";
-
-      if (interaction_type === Discord.InteractionType.ApplicationCommand) {
-        interaction_text = `Interacted with ${interaction_user_name}: ${this.message.interaction.commandName}`;
-      } else if (
-        interaction_type === Discord.InteractionType.MessageComponent
-      ) {
-        interaction_text = `Interacted with ${interaction_user_name}: ${this.message.interaction.user.id}`;
-      }
-
-      if (interaction_text) {
-        this.message_html += `<div class="message__interaction">${interaction_text}</div>`;
-      }
+    if (!this.message.interaction) {
+      this.message.interaction = "";
+      return;
     }
+  
+    const user = this.message.interaction.user;
+    const isBot = this._gather_user_bot(user);
+    const userColour = await this._gather_user_colour(user);
+    const avatarUrl = user.displayAvatarURL() || DiscordUtils.defaultAvatar;
+    this.message.interaction = await fillOut(this.guild, message_interaction, [
+      ["AVATAR_URL", avatarUrl, PARSE_MODE_NONE],
+      ["BOT_TAG", isBot, PARSE_MODE_NONE],
+      ["NAME_TAG", `${user.username}#${user.discriminator}`, PARSE_MODE_NONE],
+      ["NAME", escapeHtml(user.username), PARSE_MODE_NONE],
+      ["USER_COLOUR", userColour, PARSE_MODE_NONE],
+      ["FILLER", "used ", PARSE_MODE_NONE],
+      ["COMMAND", `/${this.message.interaction.commandName}`, PARSE_MODE_NONE],
+      ["USER_ID", user.id, PARSE_MODE_NONE],
+      ["INTERACTION_ID", this.message.interaction.id, PARSE_MODE_NONE],
+    ]);
   }
+  
 
   async build_sticker() {
-    if (this.message.stickers.size > 0) {
-      const sticker_item = this.message.stickers.first();
-      const sticker_url = sticker_item.url;
-      this.message_html += `<div class="message__sticker"><img src="${sticker_url}" alt="Sticker"></div>`;
+    if (this.message.stickers.size === 0) {
+      return;
     }
+  
+    let stickerImageUrl = this.message.stickers.first().url;
+  
+    if (stickerImageUrl.endsWith(".json")) {
+      const sticker = await this.message.stickers.first().fetch();
+      stickerImageUrl = `https://cdn.jsdelivr.net/gh/mahtoid/DiscordUtils@master/stickers/${sticker.packId}/${sticker.id}.gif`;
+    }
+  
+    this.attachments = await fillOut(this.guild, img_attachment, [
+      ["ATTACH_URL", stickerImageUrl, PARSE_MODE_NONE],
+      ["ATTACH_URL_THUMB", stickerImageUrl, PARSE_MODE_NONE]
+    ]);
   }
+  
 
   async build_assets() {
     await this.build_attachments();

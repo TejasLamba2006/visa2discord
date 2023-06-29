@@ -136,18 +136,20 @@ class ParseMarkdown {
   parseCodeBlockMarkdown(options = { reference: false }) {
     const holder = [
       [
-        /```([a-zA-Z]+)?\n([\s\S]*?)\n```/g,
+        /```([a-zA-Z]+)?\n([\s\S]*?)```/g,
         (match) =>
-          `<pre><code class="hljs ${
-            match[1] ? `language-${match[1]}` : ""
-          }">${escapeHtml(match[2])}</code></pre>`,
+          `<pre><code class="hljs ${match[1] ? `language-${match[1]}` : ""}">${match[2]}</code></pre>`,
       ],
       [
-        /`(.+?)`/g,
-        (match) => `<code class="inline-code">${escapeHtml(match[1])}</code>`,
+        /```\n?([\s\S]*?)\n?```/g,
+        (match) => `<pre><code class="hljs">${match[1]}</code></pre>`,
+      ],
+      [
+        /`([^`]+?)`/g,
+        (match) => `<code class="inline-code">${match[1]}</code>`,
       ],
     ];
-
+  
     for (const [p, r] of holder) {
       const pattern = new RegExp(p, "g");
       let match = pattern.exec(this.content);
@@ -157,7 +159,7 @@ class ParseMarkdown {
         match = pattern.exec(this.content);
       }
     }
-
+  
     if (options.reference) {
       this.content = this.content.replace(
         />>> ?([\s\S]*?)\n?```/g,
@@ -165,6 +167,9 @@ class ParseMarkdown {
       );
     }
   }
+  
+  
+
   parseEmbedMarkdown() {
     const pattern = /\[(.+?)]\((.+?)\)/g;
     let match = pattern.exec(this.content);

@@ -9,9 +9,10 @@ If you have any issues or suggestions - open an issue on the Github Repository o
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/styles/default.min.css">
     <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/highlight.min.js"></script>
-<script>hljs.highlightAll();</script>
+    <script>
+      hljs.highlightAll();
+    </script>
     <title>{{SERVER_NAME}} - {{CHANNEL_NAME}}</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width" />
@@ -752,11 +753,13 @@ If you have any issues or suggestions - open an issue on the Github Repository o
         background-color: transparent;
         transition: background-color 1s ease;
       }
-
+      .chatlog__message-container pre code {
+        background-color: #292b2f;
+      }
       .chatlog__message-container--highlighted {
         background-color: rgba(114, 137, 218, 0.2);
       }
-
+      
       .chatlog__followup-symbol {
         height: 10px;
         margin: 6px 4px 4px 36px;
@@ -1266,6 +1269,83 @@ If you have any issues or suggestions - open an issue on the Github Repository o
       .cursor_pointer {
         cursor: pointer;
       }
+      code.hljs {
+        display: block;
+        overflow-x: auto;
+        padding: 1em;
+      }
+      code.hljs {
+        padding: 3px 5px;
+      }
+      .hljs {
+        background: #4f545c;
+        color: #444;
+      }
+      .hljs-comment {
+        color: #697070;
+      }
+      .hljs-punctuation,
+      .hljs-tag {
+        color: #444a;
+      }
+      .hljs-tag .hljs-attr,
+      .hljs-tag .hljs-name {
+        color: #444;
+      }
+      .hljs-attribute,
+      .hljs-doctag,
+      .hljs-keyword,
+      .hljs-meta .hljs-keyword,
+      .hljs-name,
+      .hljs-selector-tag {
+        font-weight: 700;
+      }
+      .hljs-deletion,
+      .hljs-number,
+      .hljs-quote,
+      .hljs-selector-class,
+      .hljs-selector-id,
+      .hljs-string,
+      .hljs-template-tag,
+      .hljs-type {
+        color: #800;
+      }
+      .hljs-section,
+      .hljs-title {
+        color: #800;
+        font-weight: 700;
+      }
+      .hljs-link,
+      .hljs-operator,
+      .hljs-regexp,
+      .hljs-selector-attr,
+      .hljs-selector-pseudo,
+      .hljs-symbol,
+      .hljs-template-variable,
+      .hljs-variable {
+        color: #ab5656;
+      }
+      .hljs-literal {
+        color: #695;
+      }
+      .hljs-addition,
+      .hljs-built_in,
+      .hljs-bullet,
+      .hljs-code {
+        color: #397300;
+      }
+      .hljs-meta {
+        color: #292b2f;
+      }
+      .hljs-meta .hljs-string {
+        color: #38a;
+      }
+      .hljs-emphasis {
+        font-style: italic;
+      }
+      .hljs-strong {
+        font-weight: 700;
+      }
     </style>
     <link
       rel="stylesheet"
@@ -1424,7 +1504,9 @@ If you have any issues or suggestions - open an issue on the Github Repository o
           <div class="meta__title">Total Message Participants</div>
           <div class="meta__value">{{MESSAGE_PARTICIPANTS}}</div>
         </div>
-        <div class="meta__support"><a href="https://www.paypal.com/paypalme/tejaslamba">DONATE</a></div>
+        <div class="meta__support">
+          <a href="https://www.paypal.com/paypalme/tejaslamba">DONATE</a>
+        </div>
       </div>
     </div>
     {{META_DATA}}
