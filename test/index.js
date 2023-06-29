@@ -38,7 +38,7 @@ const trsa = await test.quickExport(channel).catch(console.error);
 channel.send({ files: [new Discord.AttachmentBuilder(trsa, { name: `xd.html` })] })
 });
 //login to discord with your app's token
-client.login('MTEwOTA2NTQ0MjMwNTI1MzM4Ng.GYDj8y.TItn1WO2rOYnoxHAJMOhZhdOlv-Oz1LD_1AxSw');
+client.login('MTEwOTA2NTQ0MjMwNTI1MzM4Ng.GSKaL5.K6nUopgM92RcZ-_2X6lSUwWcTP_Aa6qtIu324o');
 //when the bot receives a message
 
 

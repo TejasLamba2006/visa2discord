@@ -1,7 +1,4 @@
-const html = require("html");
-const moment = require("moment-timezone");
 const discord = require("discord.js");
-
 const { gatherMessages } = require("./message");
 const Component = require("./assets/components.js");
 const clearCache = require("../ext/cache");
