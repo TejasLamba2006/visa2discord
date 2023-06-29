@@ -230,7 +230,8 @@ For your discord utilities
   - [x] Embeds
   - [x] Replied messages
   - [x] Channel and Role mentions
-  - [ ] System Messages (Not Tested)
+  - [ ] System Messages (Like boosted, Join message etc.)
+  - [ ] Edited message
   - [x] Slash Commands
   - [x] Buttons
   - [x] Select Menus
