@@ -231,7 +231,7 @@ For your discord utilities
   - [x] Replied messages
   - [x] Channel and Role mentions
   - [ ] System Messages (Not Tested)
-  - [ ] Slash Commands (Not Tested)
+  - [x] Slash Commands
   - [x] Buttons
   - [x] Select Menus
   - [x] Reactions
