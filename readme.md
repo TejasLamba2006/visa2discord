@@ -228,6 +228,8 @@ For your discord utilities
 - Supports 
   - [x] Discord flavored markdown
   - [x] Embeds
+  - [x] Replied messages
+  - [x] Channel and Role mentions
   - [ ] System Messages (Not Tested)
   - [ ] Slash Commands (Not Tested)
   - [x] Buttons
@@ -237,6 +239,7 @@ For your discord utilities
   - [x] Mentions
   - [x] Pins
   - [ ] Threads
+  - [ ] Stickers
 
 ### Methods
 - `quickExport`
