@@ -60,7 +60,8 @@ class MessageConstruct {
   async construct_message() {
     if (Discord.MessageType.ChannelPinnedMessage === this.message?.type) {
       await this.build_pin();
-    } else if (Discord.MessageType.ThreadCreated === this.message?.type) {
+    } else if (this.message?.thread) {
+      await this.build_message();
       await this.build_thread();
     } else {
       await this.build_message();
@@ -270,7 +271,17 @@ class MessageConstruct {
       ],
     ]);
   }
-
+  async build_thread_template() {
+    this.messageHtml += await fillOut(this.guild, message_thread, [
+      ["THREAD_URL", DiscordUtils.thread_channel_icon, PARSE_MODE_NONE],
+      ["THREAD_NAME", this.message.thread.name, PARSE_MODE_NONE],
+      ["USER_COLOUR", await this._gather_user_colour(this.message.author)],
+      ["NAME", escapeHtml(this.message.author.username).toString()],
+      ["NAME_TAG", `${this.message.author.username}#${this.message.author.discriminator}`, PARSE_MODE_NONE],
+      ["MESSAGE_ID", this.message.id.toString(), PARSE_MODE_NONE]
+    ]);
+  }
+  
   async build_thread() {
     await this.generate_message_divider(true);
     await this.build_thread_template();
