@@ -19,6 +19,7 @@ For your discord utilities
   - [Transcripts](#transcripts)
     - [Methods](#methods)
     - [Classes](#classes)
+  - [Pretty Bytes](#pretty-bytes)
 - [Contributing](#contributing)
 - [License](#license)
 - [Credits](#credits)
@@ -309,6 +310,19 @@ For your discord utilities
 - `Transcript`
   - The `Transcript` class represents a chat transcript export and extends the `TranscriptDAO` class.
 
+## Pretty Bytes
+- Formats a number of bytes into a human-readable string representation.
+- Usage
+  ```js
+  const { prettyBytes } = require('visa2discord');
+  const bytes = 1000000000;
+  const formatted = prettyBytes(bytes);
+  console.log('Formatted bytes:', formatted);
+  ```
+  Example output
+  ```
+  Formatted bytes: 1 GB
+  ```
 # Contributing
 
 - If you want to contribute to this project, you can fork this repository and make a pull request.

@@ -7,7 +7,8 @@ const sleep = require('./src/functions/utilities/sleep'),
     cleanCode = require("./src/functions/utilities/cleanCode"),
     generateActivity = require("./src/functions/utilities/generateActivity"),
     disableButtons = require("./src/functions/utilities/disableButtons"),
-    { quickExport, exportChat, rawExport, Transcript } = require('./src/functions/tickets/main.js');
+    { quickExport, exportChat, rawExport, Transcript } = require('./src/functions/tickets/main.js'),
+    prettyBytes = require("./src/functions/utilities/prettyBytes")
 
 
 checkUpdate()
@@ -24,5 +25,6 @@ module.exports = {
     quickExport,
     exportChat,
     rawExport,
-    Transcript
+    Transcript,
+    prettyBytes
 };
