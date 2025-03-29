@@ -213,7 +213,7 @@ class Transcript extends TranscriptDAO {
       this.html = "Whoops! Something went wrong...";
       console.error(error);
       console.log(
-        "Please send a screenshot of the above error to https://github.com/The-Rainbow-Studios/visa2discord"
+        "Please send a screenshot of the above error to https://github.com/TejasLamba2006/visa2discord"
       );
       return this;
     }

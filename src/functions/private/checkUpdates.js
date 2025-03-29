@@ -20,9 +20,8 @@ module.exports = async () => {
     require("../../../package.json").version !==
     packageData["dist-tags"]?.latest
   ) {
-    const change = `${require("../../../package.json").version} --> ${
-      packageData["dist-tags"]?.latest
-    }`;
+    const change = `${require("../../../package.json").version} --> ${packageData["dist-tags"]?.latest
+      }`;
     console.log("\n\n");
     console.log(
       "\x1b[32m" + "-------------------------------------------------------"
@@ -35,7 +34,7 @@ module.exports = async () => {
     );
     console.log(
       "\x1b[33m" +
-        `|  The module is\x1b[31m out of date!\x1b[33m                         |`
+      `|  The module is\x1b[31m out of date!\x1b[33m                         |`
     );
     console.log(
       "\x1b[35m" + "|             New version is available!               |"
@@ -52,11 +51,11 @@ module.exports = async () => {
     );
     console.log(
       "\x1b[31m" +
-        `| https://github.com/The-Rainbow-Studios/visa2discord/releases/tag/${packageData["dist-tags"].latest}|`
+      `| https://github.com/TejasLamba2006/visa2discord/releases/tag/${packageData["dist-tags"].latest}|`
     );
     console.log(
       "\x1b[32m" +
-        "-------------------------------------------------------\x1b[37m"
+      "-------------------------------------------------------\x1b[37m"
     );
     console.log("\n\n");
   }

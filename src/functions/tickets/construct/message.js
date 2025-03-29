@@ -87,7 +87,7 @@ class MessageConstruct {
       this.previous_message.author?.id !== this.message.author.id ||
       this.message.webhookId !== null ||
       this.message.createdTimestamp >
-        this.previous_message.createdTimestamp + 4 * 60 * 1000
+      this.previous_message.createdTimestamp + 4 * 60 * 1000
     );
   }
   async generate_message_divider(channel_audit = false) {
@@ -125,7 +125,7 @@ class MessageConstruct {
         ["AVATAR_URL", String(avatar_url), PARSE_MODE_NONE],
         [
           "NAME_TAG",
-          `${this.message.author.username}#${this.message.author.discriminator}`,
+          `${this.message.author.username}`,
           PARSE_MODE_NONE,
         ],
         ["USER_ID", String(this.message.author.id)],
@@ -135,7 +135,7 @@ class MessageConstruct {
           await this._gather_user_icon(this.message.author),
           PARSE_MODE_NONE,
         ],
-        ["NAME", String(escapeHtml(this.message.author.display_name))],
+        ["NAME", String(escapeHtml(this.message.author.displayName))],
         ["BOT_TAG", String(is_bot), PARSE_MODE_NONE],
         ["TIMESTAMP", String(this.message.createdTimestamp)],
         ["DEFAULT_TIMESTAMP", String(default_timestamp), PARSE_MODE_NONE],
@@ -165,7 +165,7 @@ class MessageConstruct {
         const avatar_url =
           xd.message.author.displayAvatarURL() || DiscordUtils.default_avatar;
 
-        if (xd.message.reference ||xd.message.interaction) {
+        if (xd.message.reference || xd.message.interaction) {
           followup_symbol = "<div class='chatlog__followup-symbol'></div>";
         }
 
@@ -184,7 +184,7 @@ class MessageConstruct {
           ["AVATAR_URL", String(avatar_url), PARSE_MODE_NONE],
           [
             "NAME_TAG",
-            `${xd.message.author.username}#${xd.message.author.discriminator}`,
+            `${xd.message.author.username}`,
             PARSE_MODE_NONE,
           ],
           ["USER_ID", String(xd.message.author.id)],
@@ -260,7 +260,7 @@ class MessageConstruct {
       ["NAME", String(escapeHtml(this.message.author.username))],
       [
         "NAME_TAG",
-        `${this.message.author.username}#${this.message.author.discriminator}`,
+        `${this.message.author.username}`,
         PARSE_MODE_NONE,
       ],
       ["MESSAGE_ID", this.message.id, PARSE_MODE_NONE],
@@ -277,11 +277,11 @@ class MessageConstruct {
       ["THREAD_NAME", this.message.thread.name, PARSE_MODE_NONE],
       ["USER_COLOUR", await this._gather_user_colour(this.message.author)],
       ["NAME", escapeHtml(this.message.author.username).toString()],
-      ["NAME_TAG", `${this.message.author.username}#${this.message.author.discriminator}`, PARSE_MODE_NONE],
+      ["NAME_TAG", `${this.message.author.username}`, PARSE_MODE_NONE],
       ["MESSAGE_ID", this.message.id.toString(), PARSE_MODE_NONE]
     ]);
   }
-  
+
   async build_thread() {
     await this.generate_message_divider(true);
     await this.build_thread_template();
@@ -335,7 +335,7 @@ class MessageConstruct {
         ["AVATAR_URL", String(avatar_url), PARSE_MODE_NONE],
         [
           "NAME_TAG",
-          `${this.message.author.username}#${this.message.author.discriminator}`,
+          `${this.message.author.username}`,
           PARSE_MODE_NONE,
         ],
         ["USER_ID", String(this.message.author.id)],
@@ -376,18 +376,18 @@ class MessageConstruct {
     if (user_id in this.meta_data) {
       this.meta_data[user_id][4] += 1;
     } else {
-      const user_name_discriminator = `${this.message.author.username}#${this.message.author.discriminator}`;
-      const user_created_at = this.message.author.created_at;
+      const user_name = `${this.message.author.username}`;
+      const user_created_at = this.message.author.createdAt;
       const user_bot = this._gather_user_bot(this.message.author);
       const user_avatar =
         this.message.author.displayAvatarURL() || DiscordUtils.default_avatar;
-      const user_joined_at = this.message.author.joined_at || null;
+      const user_joined_at = this.message.author.joinedAt || null;
       const user_display_name =
         this.message.author.display_name !== this.message.author.username
           ? `<div class="meta__display-name">${this.message.author.username}</div>`
           : "";
       this.meta_data[user_id] = [
-        user_name_discriminator,
+        user_name,
         user_created_at,
         user_bot,
         user_avatar,
@@ -401,7 +401,6 @@ class MessageConstruct {
   async build_content() {
     if (!this.message?.content) {
       this.message.content = "";
-      return;
     }
 
     // if (this.message.editedTimestamp) {
@@ -420,7 +419,7 @@ class MessageConstruct {
   setEditAt(messageEditedAt) {
     return `<span class="chatlog__reference-edited-timestamp" title="${messageEditedAt}">(edited)</span>`;
   }
-  
+
 
   async build_reference() {
     if (!this.message.reference) {
@@ -437,38 +436,38 @@ class MessageConstruct {
       }
       return;
     }
-  
+
     const isBot = this._gather_user_bot(message.author);
     const userColour = await this._gather_user_colour(message.author);
-  
+
     if (!message.content && !message.interaction && message.attachments && message.attachments.size > 0 && message.embeds.length === 0) {
       message.content = "Click to see attachment";
     } else if (!message.content && message.interaction) {
       message.content = "Click to see command";
-    } else if(!message.content && message.embeds.length > 0) {
+    } else if (!message.content && message.embeds.length > 0) {
       message.content = "Click to see embed";
     } else if (!message.content) {
       message.content = "Click to see message";
     }
-  
+
     let icon = DiscordUtils.button_external_link;
     if (!message.interaction && (message.embeds.length > 0 || message.attachments.size > 0)) {
       icon = DiscordUtils.reference_attachment_icon;
     } else if (message.interaction) {
       icon = DiscordUtils.interaction_command_icon;
     }
-  
+
     const [_, messageEditedAt] = this.set_time(message);
-  
+
     if (messageEditedAt) {
       messageEditedAt = this.setEditAt(messageEditedAt);
     }
-  
+
     const avatarUrl = message.author.displayAvatarURL() || DiscordUtils.default_avatar;
     this.message.reference = await fillOut(this.guild, message_reference, [
       ["AVATAR_URL", String(avatarUrl), PARSE_MODE_NONE],
       ["BOT_TAG", isBot, PARSE_MODE_NONE],
-      ["NAME_TAG", `${message.author.username}#${message.author.discriminator}`, PARSE_MODE_NONE],
+      ["NAME_TAG", `${message.author.username}`, PARSE_MODE_NONE],
       ["NAME", String(escapeHtml(message.author.username))],
       ["USER_COLOUR", userColour, PARSE_MODE_NONE],
       ["CONTENT", message.content, PARSE_MODE_REFERENCE],
@@ -478,13 +477,13 @@ class MessageConstruct {
       ["MESSAGE_ID", String(this.message.reference.messageId), PARSE_MODE_NONE],
     ]);
   }
-  
+
   async build_interaction() {
     if (!this.message.interaction) {
       this.message.interaction = "";
       return;
     }
-  
+
     const user = this.message.interaction.user;
     const isBot = this._gather_user_bot(user);
     const userColour = await this._gather_user_colour(user);
@@ -492,7 +491,7 @@ class MessageConstruct {
     this.message.interaction = await fillOut(this.guild, message_interaction, [
       ["AVATAR_URL", avatarUrl, PARSE_MODE_NONE],
       ["BOT_TAG", isBot, PARSE_MODE_NONE],
-      ["NAME_TAG", `${user.username}#${user.discriminator}`, PARSE_MODE_NONE],
+      ["NAME_TAG", `${user.username}`, PARSE_MODE_NONE],
       ["NAME", escapeHtml(user.username), PARSE_MODE_NONE],
       ["USER_COLOUR", userColour, PARSE_MODE_NONE],
       ["FILLER", "used ", PARSE_MODE_NONE],
@@ -501,26 +500,26 @@ class MessageConstruct {
       ["INTERACTION_ID", this.message.interaction.id, PARSE_MODE_NONE],
     ]);
   }
-  
+
 
   async build_sticker() {
     if (this.message.stickers.size === 0) {
       return;
     }
-  
+
     let stickerImageUrl = this.message.stickers.first().url;
-  
+
     if (stickerImageUrl.endsWith(".json")) {
       const sticker = await this.message.stickers.first().fetch();
       stickerImageUrl = `https://cdn.jsdelivr.net/gh/mahtoid/DiscordUtils@master/stickers/${sticker.packId}/${sticker.id}.gif`;
     }
-  
+
     this.attachments = await fillOut(this.guild, img_attachment, [
       ["ATTACH_URL", stickerImageUrl, PARSE_MODE_NONE],
       ["ATTACH_URL_THUMB", stickerImageUrl, PARSE_MODE_NONE]
     ]);
   }
-  
+
 
   async build_assets() {
     await this.build_attachments();
