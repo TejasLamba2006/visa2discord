@@ -1,10 +1,9 @@
-const discord = require("discord.js");
-const { gatherMessages } = require("./message");
-const Component = require("./assets/components.js");
-const clearCache = require("../ext/cache");
-const passBot = require("../parse/mention");
-const { DiscordUtils } = require("../ext/discord_utils");
-const {
+import { Client, Collection, Message, TextChannel } from "discord.js";
+import { gatherMessages } from "./message";
+import Component from "./assets/components";
+import clearCache from "../ext/cache";
+import { DiscordUtils } from "../ext/discordUtils";
+import {
   fillOut,
   total,
   channelTopic,
@@ -12,66 +11,77 @@ const {
   fancyTime,
   channelSubject,
   PARSE_MODE_NONE,
-} = require("../ext/html_gen.js");
+  PARSE_MODE_MARKDOWN,
+} from "../ext/htmlGen";
 
 /**
  * Data Access Object for chat transcript export.
  */
-class TranscriptDAO {
+abstract class TranscriptDAO {
   /**
    * The HTML content of the chat transcript.
    * @type {string}
    */
-  html;
+  html!: string;
+  channel: TextChannel;
+  messages: Collection<string, Message> | null;
+  limit: number;
+  timezone: string;
+  military_time: boolean;
+  fancy_times: boolean;
+  before?: string;
+  after?: string;
+  support_dev: boolean;
 
   /**
    * Create a new TranscriptDAO instance.
-   * @param {Channel} channel - The channel to export the chat from.
+   * @param {TextChannel} channel - The channel to export the chat from.
    * @param {number|string} limit - The maximum number of messages to include in the export.
    * @param {Array<Message>|null} messages - The specific messages to include in the export. Defaults to null.
    * @param {string} timezone - The timezone information for the transcript.
    * @param {boolean} military_time - Whether to use military time format for timestamps.
    * @param {boolean} fancy_times - Whether to use fancy formatting for timestamps.
-   * @param {Date|null} before - The date to limit messages before. Defaults to null.
-   * @param {Date|null} after - The date to limit messages after. Defaults to null.
+   * @param {Date|null} before - The message ID to limit messages before. Defaults to null.
+   * @param {Date|null} after - The message ID to limit messages after. Defaults to null.
    * @param {boolean} support_dev - Whether to include developer support information in the transcript.
    * @param {Client|null} client - The Discord client object. Defaults to null.
    */
   constructor(
-    channel,
-    limit,
-    messages,
-    timezone,
-    military_time,
-    fancy_times,
-    before,
-    after,
-    support_dev,
-    client
+    channel: TextChannel,
+    limit: number | string,
+    messages: Collection<string, Message> | null,
+    timezone: string,
+    military_time: boolean,
+    fancy_times: boolean,
+    before: string | undefined,
+    after: string | undefined,
+    support_dev: boolean,
+    client: Client | null
   ) {
-    this.channel = channel.channel;
+    this.channel = channel;
     this.messages = messages;
-    this.limit = limit ? parseInt(limit) : 100;
-    this.timezone = timezone;
+    this.limit = limit ? parseInt(limit as string) : 100;
+    this.timezone = timezone || "UTC";
     this.military_time = military_time;
     this.fancy_times = fancy_times;
     this.before = before;
     this.after = after;
     this.support_dev = support_dev;
-    if (!this.timezone) {
-      this.timezone = "UTC";
-    }
-    if (client) {
-      passBot(client);
-    }
   }
+
+  /**
+   * Abstract method to be implemented by subclasses for exporting the chat transcript.
+   * @returns {Promise<TranscriptDAO>} A Promise that resolves to the exported chat transcript.
+   */
+  abstract export(): Promise<TranscriptDAO>;
+
   /**
    * Build and export the chat transcript.
    * @async
-   * @returns {Promise<string>} A Promise that resolves to the HTML content of the exported chat transcript.
+   * @returns {Promise<TranscriptDAO>} A Promise that resolves to the HTML content of the exported chat transcript.
    * @private
    */
-  async buildTranscript() {
+  async buildTranscript(): Promise<TranscriptDAO> {
     const [messageHtml, metaData] = await gatherMessages(
       this.messages,
       this.channel.guild,
@@ -84,10 +94,10 @@ class TranscriptDAO {
     return this;
   }
 
-  async exportTranscript(messageHtml, metaData) {
+  async exportTranscript(messageHtml: string, metaData: any): Promise<void> {
     const guild_icon =
       this.channel.guild.icon && this.channel.guild.icon.length > 2
-        ? this.channel.guild.iconURL()
+        ? this.channel.guild.iconURL()!
         : DiscordUtils.default_avatar;
 
     const time_now = new Date().toLocaleString(this.timezone, {
@@ -117,11 +127,11 @@ class TranscriptDAO {
         ["MEMBER_ID", data, PARSE_MODE_NONE],
         ["USER_AVATAR", metaData[data][3], PARSE_MODE_NONE],
         ["DISPLAY", metaData[data][6], PARSE_MODE_NONE],
-        ["MESSAGE_COUNT", metaData[data][4].toString()],
+        ["MESSAGE_COUNT", metaData[data][4].toString(), PARSE_MODE_MARKDOWN],
       ]);
     }
 
-    const channel_creation_time = this.channel.createdAt.toLocaleString(
+    const channel_creation_time = this.channel.createdAt?.toLocaleString(
       this.timezone,
       {
         month: "short",
@@ -133,10 +143,7 @@ class TranscriptDAO {
       }
     );
 
-    const raw_channel_topic =
-      this.channel instanceof discord.TextChannel && this.channel.topic
-        ? this.channel.topic
-        : "";
+    const raw_channel_topic = this.channel.topic;
 
     let channel_topic_html = "";
     if (raw_channel_topic) {
@@ -151,7 +158,7 @@ class TranscriptDAO {
 
     const subject = await fillOut(this.channel.guild, channelSubject, [
       ["LIMIT", limit, PARSE_MODE_NONE],
-      ["CHANNEL_NAME", this.channel.name],
+      ["CHANNEL_NAME", this.channel.name, PARSE_MODE_MARKDOWN],
     ]);
 
     let _fancy_time = "";
@@ -162,14 +169,14 @@ class TranscriptDAO {
       ]);
     }
     this.html = await fillOut(this.channel.guild, total, [
-      ["SERVER_NAME", escapeHtml(this.channel.guild.name)],
+      ["SERVER_NAME", escapeHtml(this.channel.guild.name), PARSE_MODE_MARKDOWN],
       ["GUILD_ID", this.channel.guild.id, PARSE_MODE_NONE],
       ["SERVER_AVATAR_URL", guild_icon, PARSE_MODE_NONE],
-      ["CHANNEL_NAME", this.channel.name],
-      ["MESSAGE_COUNT", this.messages.size.toString()],
+      ["CHANNEL_NAME", this.channel.name, PARSE_MODE_MARKDOWN],
+      ["MESSAGE_COUNT", this.messages!.size.toString(), PARSE_MODE_MARKDOWN],
       ["MESSAGES", messageHtml, PARSE_MODE_NONE],
       ["META_DATA", meta_data_html, PARSE_MODE_NONE],
-      ["DATE_TIME", time_now],
+      ["DATE_TIME", time_now, PARSE_MODE_MARKDOWN],
       ["SUBJECT", subject, PARSE_MODE_NONE],
       ["CHANNEL_CREATED_AT", channel_creation_time, PARSE_MODE_NONE],
       ["CHANNEL_TOPIC", channel_topic_html, PARSE_MODE_NONE],
@@ -194,8 +201,8 @@ class Transcript extends TranscriptDAO {
    * @async
    * @returns {Promise<Transcript>} A Promise that resolves to the exported chat transcript.
    */
-  async export() {
-    if (!this.messages) {
+  async export(): Promise<Transcript> {
+    if (!this.messages && this.limit && !(this.before || this.after)) {
       this.messages = await this.channel.messages.fetch({
         limit: this.limit,
         before: this.before,
@@ -204,7 +211,7 @@ class Transcript extends TranscriptDAO {
     }
 
     if (!this.after) {
-      this.messages.reverse();
+      this.messages?.reverse();
     }
 
     try {
@@ -220,10 +227,10 @@ class Transcript extends TranscriptDAO {
   }
 }
 
-module.exports = Transcript;
+export default Transcript;
 
-function escapeHtml(text) {
-  const map = {
+function escapeHtml(text: string): string {
+  const map: { [key: string]: string } = {
     "&": "&amp;",
     "<": "&lt;",
     ">": "&gt;",

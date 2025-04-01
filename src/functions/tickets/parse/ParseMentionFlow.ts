@@ -1,33 +1,38 @@
+import { Guild, TextChannel, Role } from "discord.js";
+
 class ParseMentionFlow {
-  static REGEX_ROLES = /&lt;@&amp;([0-9]+)&gt;/;
-  static REGEX_ROLES_2 = /<@&([0-9]+)>/;
-  static REGEX_MEMBERS = /&lt;@!?([0-9]+)&gt;/;
-  static REGEX_MEMBERS_2 = /<@!?([0-9]+)>/;
-  static REGEX_CHANNELS = /&lt;#([0-9]+)&gt;/;
-  static REGEX_CHANNELS_2 = /<#([0-9]+)>/;
-  static REGEX_EMOJIS = /&lt;a?(:[^\n:]+:)[0-9]+&gt;/;
-  static REGEX_EMOJIS_2 = /<a?(:[^\n:]+:)[0-9]+>/;
-  static REGEX_TIME_HOLDER = [
-    [/&lt;t:([0-9]+):t&gt;/, "%H:%M"],
-    [/&lt;t:([0-9]+):T&gt;/, "%T"],
-    [/&lt;t:([0-9]+):d&gt;/, "%d/%m/%Y"],
-    [/&lt;t:([0-9]+):D&gt;/, "%e %B %Y"],
-    [/&lt;t:([0-9]+):f&gt;/, "%e %B %Y %H:%M"],
-    [/&lt;t:([0-9]+):F&gt;/, "%A, %e %B %Y %H:%M"],
-    [/&lt;t:([0-9]+):R&gt;/, "%e %B %Y %H:%M"],
-    [/&lt;t:([0-9]+)&gt;/, "%e %B %Y %H:%M"],
+  static readonly REGEX_ROLES = /&lt;@&amp;(\d+)&gt;/;
+  static readonly REGEX_ROLES_2 = /<@&(\d+)>/;
+  static readonly REGEX_MEMBERS = /&lt;@!?(\d+)&gt;/;
+  static readonly REGEX_MEMBERS_2 = /<@!?(\d+)>/;
+  static readonly REGEX_CHANNELS = /&lt;#(\d+)&gt;/;
+  static readonly REGEX_CHANNELS_2 = /<#(\d+)>/;
+  static readonly REGEX_EMOJIS = /&lt;a?(:[^\n:]+:)\d+&gt;/;
+  static readonly REGEX_EMOJIS_2 = /<a?(:[^\n:]+:)\d+>/;
+  static readonly REGEX_TIME_HOLDER: [RegExp, string][] = [
+    [/&lt;t:(\d+):t&gt;/, "%H:%M"],
+    [/&lt;t:(\d+):T&gt;/, "%T"],
+    [/&lt;t:(\d+):d&gt;/, "%d/%m/%Y"],
+    [/&lt;t:(\d+):D&gt;/, "%e %B %Y"],
+    [/&lt;t:(\d+):f&gt;/, "%e %B %Y %H:%M"],
+    [/&lt;t:(\d+):F&gt;/, "%A, %e %B %Y %H:%M"],
+    [/&lt;t:(\d+):R&gt;/, "%e %B %Y %H:%M"],
+    [/&lt;t:(\d+)&gt;/, "%e %B %Y %H:%M"],
   ];
 
-  static ESCAPE_LT = "______lt______";
-  static ESCAPE_GT = "______gt______";
-  static ESCAPE_AMP = "______amp______";
+  static readonly ESCAPE_LT = "______lt______";
+  static readonly ESCAPE_GT = "______gt______";
+  static readonly ESCAPE_AMP = "______amp______";
 
-  constructor(content, guild) {
+  content: string;
+  guild: Guild;
+
+  constructor(content: string, guild: Guild) {
     this.content = content;
     this.guild = guild;
   }
 
-  async flow() {
+  async flow(): Promise<string> {
     if (!this.content) return this.content;
     this.escapeMentions();
     this.escapeMentions();
@@ -40,9 +45,9 @@ class ParseMentionFlow {
     return this.content;
   }
 
-  escapeMentions() {
+  escapeMentions(): void {
     const regex = new RegExp(
-      `(${ParseMentionFlow.REGEX_ROLES}|${ParseMentionFlow.REGEX_MEMBERS}|${ParseMentionFlow.REGEX_CHANNELS}|${ParseMentionFlow.REGEX_EMOJIS}|${ParseMentionFlow.REGEX_ROLES_2}|${ParseMentionFlow.REGEX_MEMBERS_2}|${ParseMentionFlow.REGEX_CHANNELS_2}|${ParseMentionFlow.REGEX_EMOJIS_2})`,
+      `(${ParseMentionFlow.REGEX_ROLES.source}|${ParseMentionFlow.REGEX_MEMBERS.source}|${ParseMentionFlow.REGEX_CHANNELS.source}|${ParseMentionFlow.REGEX_EMOJIS.source}|${ParseMentionFlow.REGEX_ROLES_2.source}|${ParseMentionFlow.REGEX_MEMBERS_2.source}|${ParseMentionFlow.REGEX_CHANNELS_2.source}|${ParseMentionFlow.REGEX_EMOJIS_2.source})`,
       "g"
     );
     this.content = this.content.replace(regex, (match) => {
@@ -53,7 +58,7 @@ class ParseMentionFlow {
     });
   }
 
-  unescapeMentions() {
+  unescapeMentions(): void {
     this.content = this.content.replace(
       new RegExp(ParseMentionFlow.ESCAPE_LT, "g"),
       "<"
@@ -68,28 +73,28 @@ class ParseMentionFlow {
     );
   }
 
-  channelMention() {
+  channelMention(): void {
     const holder = [
       ParseMentionFlow.REGEX_CHANNELS,
       ParseMentionFlow.REGEX_CHANNELS_2,
     ];
     for (const regex of holder) {
-      let match = this.content.match(regex);
+      let match = RegExp(regex).exec(this.content);
       while (match) {
-        const channelId = String(match[1]);
-        const channel = this.guild.channels.cache.get(channelId);
+        const channelId = match[1];
+        const channel = this.guild.channels.cache.get(channelId) as TextChannel;
 
         const replacement = channel
           ? `<span class="mention" title="${channel.id}">#${channel.name}</span>`
           : "#deleted-channel";
 
         this.content = this.content.replace(match[0], replacement);
-        match = this.content.match(regex);
+        match = RegExp(regex).exec(this.content);
       }
     }
   }
 
-  roleMention() {
+  roleMention(): void {
     const holder = [
       ParseMentionFlow.REGEX_ROLES,
       ParseMentionFlow.REGEX_ROLES_2,
@@ -97,19 +102,30 @@ class ParseMentionFlow {
     for (const regex of holder) {
       let match = this.content.match(regex);
       while (match) {
-        const roleId = String(match[1]);
-        const role = this.guild.roles.cache.get(roleId);
+        const roleId = match[1];
+        const role = this.guild.roles.cache.get(roleId) as Role;
         const replacement = role
-          ? `<span class="mention" style="color: ${hexToRgba(role.hexColor)}; background-color:${hexToRgba(role.hexColor, 0.1)};  transition: background-color 0.3s ease;" onmouseover="this.style.backgroundColor='${hexToRgba(role.hexColor, 0.5)}'" onmouseout="this.style.backgroundColor='${hexToRgba(role.hexColor, 0.1)}'">@${role.name}</span>`
+          ? `<span class="mention" style="color: ${hexToRgba(
+              role.hexColor
+            )}; background-color:${hexToRgba(
+              role.hexColor,
+              0.1
+            )};  transition: background-color 0.3s ease;" onmouseover="this.style.backgroundColor='${hexToRgba(
+              role.hexColor,
+              0.5
+            )}'" onmouseout="this.style.backgroundColor='${hexToRgba(
+              role.hexColor,
+              0.1
+            )}'">@${role.name}</span>`
           : "@deleted-role";
 
         this.content = this.content.replace(match[0], replacement);
-        match = this.content.match(regex);
+        match = RegExp(regex).exec(this.content);
       }
     }
   }
 
-  async memberMention() {
+  async memberMention(): Promise<void> {
     const holder = [
       ParseMentionFlow.REGEX_MEMBERS,
       ParseMentionFlow.REGEX_MEMBERS_2,
@@ -117,7 +133,7 @@ class ParseMentionFlow {
     for (const regex of holder) {
       let match = this.content.match(regex);
       while (match) {
-        const memberId = String(match[1]);
+        const memberId = match[1];
         const member = await this.guild.members.fetch(memberId);
         let replacement;
         if (member) {
@@ -132,23 +148,17 @@ class ParseMentionFlow {
     }
   }
 
-  timeMention() {
+  timeMention(): void {
     const holder = ParseMentionFlow.REGEX_TIME_HOLDER;
 
-    for (const [regex, strf] of holder) {
+    for (const [regex] of holder) {
       let match = this.content.match(regex);
       while (match) {
-        const timestamp = String(match[1]) * 1000;
-        const time = new Date(timestamp).toLocaleString(
-          this.guild.preferredLocale,
-          {
-            timeZone: timezone,
-          }
-        );
+        const timestamp = parseInt(match[1]) * 1000;
         const uiTime = new Date(timestamp).toLocaleString(
           this.guild.preferredLocale,
           {
-            timeZone: timezone,
+            timeZone: "UTC",
             hour12: false,
             hour: "numeric",
             minute: "numeric",
@@ -157,7 +167,7 @@ class ParseMentionFlow {
         const tooltipTime = new Date(timestamp).toLocaleString(
           this.guild.preferredLocale,
           {
-            timeZone: timezone,
+            timeZone: "UTC",
             weekday: "long",
             day: "numeric",
             month: "long",
@@ -177,16 +187,16 @@ class ParseMentionFlow {
   }
 }
 
-module.exports = ParseMentionFlow;
+export default ParseMentionFlow;
 
-function hexToRgba(hexCode, alpha = 1.0) {
-  hexCode = hexCode.replace('#', '');
+function hexToRgba(hexCode: string, alpha: number = 1.0): string {
+  hexCode = hexCode.replace("#", "");
 
-  const red = parseInt(hexCode.substr(0, 2), 16);
-  const green = parseInt(hexCode.substr(2, 2), 16);
-  const blue = parseInt(hexCode.substr(4, 2), 16);
+  const red = parseInt(hexCode.substring(0, 2), 16);
+  const green = parseInt(hexCode.substring(2, 4), 16);
+  const blue = parseInt(hexCode.substring(4, 6), 16);
 
-  alpha = parseFloat(alpha);
+  alpha = parseFloat(alpha.toString());
 
   return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
 }

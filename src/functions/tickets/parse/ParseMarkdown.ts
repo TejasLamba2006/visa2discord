@@ -1,10 +1,13 @@
-const { convertEmoji } = require("../ext/emoji_convert");
+import { convertEmoji } from "../ext/emojiConvert";
+
 class ParseMarkdown {
-  constructor(content) {
+  content: string;
+
+  constructor(content: string) {
     this.content = content;
   }
 
-  async standardMessageFlow() {
+  async standardMessageFlow(): Promise<string> {
     this.httpsHttpLinks();
     this.parseCodeBlockMarkdown();
     this.parseNormalMarkdown();
@@ -13,12 +16,13 @@ class ParseMarkdown {
     return this.content;
   }
 
-  async linkEmbedFlow() {
+  async linkEmbedFlow(): Promise<string> {
     this.parseEmbedMarkdown();
     await this.parseEmoji();
+    return this.content;
   }
 
-  async standardEmbedFlow() {
+  async standardEmbedFlow(): Promise<string> {
     this.httpsHttpLinks();
     this.parseEmbedMarkdown();
     this.parseNormalMarkdown();
@@ -28,7 +32,7 @@ class ParseMarkdown {
     return this.content;
   }
 
-  async specialEmbedFlow() {
+  async specialEmbedFlow(): Promise<string> {
     this.httpsHttpLinks();
     this.parseNormalMarkdown();
     this.parseCodeBlockMarkdown();
@@ -37,7 +41,7 @@ class ParseMarkdown {
     return this.content;
   }
 
-  async messageReferenceFlow() {
+  async messageReferenceFlow(): Promise<string> {
     this.httpsHttpLinks();
     this.parseNormalMarkdown();
     this.parseCodeBlockMarkdown({ reference: true });
@@ -47,17 +51,17 @@ class ParseMarkdown {
     return this.content;
   }
 
-  async specialEmojiFlow() {
+  async specialEmojiFlow(): Promise<string> {
     await this.parseEmoji();
     return this.content;
   }
 
-  parseBr() {
+  parseBr(): void {
     this.content = this.content.replace(/<br>/g, " ");
   }
 
-  async parseEmoji() {
-    const holder = [
+  async parseEmoji(): Promise<void> {
+    const holder: [RegExp, string][] = [
       [
         /<:.*?:(\d*)>/g,
         '<img class="emoji emoji--small" src="https://cdn.discordapp.com/emojis/$1.png">',
@@ -89,8 +93,8 @@ class ParseMarkdown {
     }
   }
 
-  parseNormalMarkdown() {
-    const holder = [
+  parseNormalMarkdown(): void {
+    const holder: [RegExp, string][] = [
       [/__([^_]+)__/g, '<span style="text-decoration: underline">$1</span>'],
       [/\*\*([^*]+)\*\*/g, "<strong>$1</strong>"],
       [/\*([^*]+)\*/g, "<em>$1</em>"],
@@ -100,45 +104,58 @@ class ParseMarkdown {
         '<span class="spoiler spoiler--hidden" onclick="showSpoiler(event, this)"> <span class="spoiler-text">$1</span></span>',
       ],
     ];
-  
+
     const codeRegex = /<code>(.*?)<\/code>/gs;
-    const codeMatches = Array.from(this.content.matchAll(codeRegex), (match) => match[0]);
-    const codePlaceholders = codeMatches.map((code, index) => `__CODEBLOCK_${index}__`);
+    const codeMatches = Array.from(
+      this.content.matchAll(codeRegex),
+      (match) => match[0]
+    );
+    const codePlaceholders = codeMatches.map(
+      (code, index) => `__CODEBLOCK_${index}__`
+    );
     let transformedContent = this.content;
-  
+
     // Replace code blocks with placeholders
     for (let i = 0; i < codeMatches.length; i++) {
-      transformedContent = transformedContent.replace(codeMatches[i], codePlaceholders[i]);
+      transformedContent = transformedContent.replace(
+        codeMatches[i],
+        codePlaceholders[i]
+      );
     }
-  
+
     // Apply transformations outside code blocks
     for (const [p, r] of holder) {
       const pattern = new RegExp(p, "g");
       let match = pattern.exec(transformedContent);
       while (match) {
         const affectedText = match[1];
-        transformedContent = transformedContent.replace(match[0], r.replace("$1", affectedText));
+        transformedContent = transformedContent.replace(
+          match[0],
+          r.replace("$1", affectedText)
+        );
         match = pattern.exec(transformedContent);
       }
     }
-  
+
     // Restore code blocks from placeholders
     for (let i = 0; i < codePlaceholders.length; i++) {
-      transformedContent = transformedContent.replace(codePlaceholders[i], codeMatches[i]);
+      transformedContent = transformedContent.replace(
+        codePlaceholders[i],
+        codeMatches[i]
+      );
     }
-  
+
     this.content = transformedContent;
   }
-  
-  
-  
 
-  parseCodeBlockMarkdown(options = { reference: false }) {
-    const holder = [
+  parseCodeBlockMarkdown(options: { reference?: boolean } = {}): void {
+    const holder: [RegExp, (match: RegExpExecArray) => string][] = [
       [
         /```([a-zA-Z]+)?\n([\s\S]*?)```/g,
         (match) =>
-          `<pre><code class="hljs ${match[1] ? `language-${match[1]}` : ""}">${match[2]}</code></pre>`,
+          `<pre><code class="hljs ${match[1] ? `language-${match[1]}` : ""}">${
+            match[2]
+          }</code></pre>`,
       ],
       [
         /```\n?([\s\S]*?)\n?```/g,
@@ -149,7 +166,7 @@ class ParseMarkdown {
         (match) => `<code class="inline-code">${match[1]}</code>`,
       ],
     ];
-  
+
     for (const [p, r] of holder) {
       const pattern = new RegExp(p, "g");
       let match = pattern.exec(this.content);
@@ -159,7 +176,7 @@ class ParseMarkdown {
         match = pattern.exec(this.content);
       }
     }
-  
+
     if (options.reference) {
       this.content = this.content.replace(
         />>> ?([\s\S]*?)\n?```/g,
@@ -167,8 +184,6 @@ class ParseMarkdown {
       );
     }
   }
-  
-  
 
   parseEmbedMarkdown() {
     const pattern = /\[(.+?)]\((.+?)\)/g;
@@ -184,7 +199,7 @@ class ParseMarkdown {
     }
 
     const lines = this.content.split("\n");
-    let quoteBuffer = null;
+    let quoteBuffer: string | null = null;
     let newContent = "";
     const quotePattern = /^>\s(.+)/;
 
@@ -197,8 +212,8 @@ class ParseMarkdown {
       return this.content;
     }
 
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
+    for (const element of lines) {
+      const line = element;
       if (quotePattern.test(line) && quoteBuffer) {
         quoteBuffer += "\n" + line.substring(2);
       } else if (!quoteBuffer) {
@@ -219,10 +234,9 @@ class ParseMarkdown {
     }
 
     this.content = newContent;
-    return this.content;
   }
 
-  httpsHttpLinks() {
+  httpsHttpLinks(): void {
     const pattern = new RegExp(
       /(?<!src=)(?<!href=)(?<!\!)(https?:\/\/[^\s/$.?#].[^\s]*)/gi
     );
@@ -233,9 +247,10 @@ class ParseMarkdown {
   }
 }
 
-module.exports = ParseMarkdown;
-function escapeHtml(text) {
-  const map = {
+export default ParseMarkdown;
+
+function escapeHtml(text: string): string {
+  const map: { [key: string]: string } = {
     "&": "&amp;",
     "<": "&lt;",
     ">": "&gt;",

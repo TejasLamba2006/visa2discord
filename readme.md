@@ -8,14 +8,10 @@ For your discord utilities
 - [Table of contents](#table-of-contents)
 - [Installation](#installation)
 - [Functions](#functions)
-  - [Sleep](#sleep)
   - [passGen](#passgen)
-  - [AutoThreadJoiner](#autothreadjoiner)
   - [Clean Code](#clean-code)
   - [Split MessageRegex](#split-messageregex)
-  - [Discord Timestamp](#discord-timestamp)
   - [Discord activity generator](#discord-activity-generator)
-  - [Disable Buttons](#disable-buttons)
   - [Transcripts](#transcripts)
     - [Methods](#methods)
     - [Classes](#classes)
@@ -48,23 +44,6 @@ For your discord utilities
 
 # Functions
 
-## Sleep
-
-- The `sleep` function is used to introduce a delay in the execution of code. It can be useful in scenarios where you want to pause the execution for a specific period of time.
-- Usage
-
-  ```js
-  const { sleep } = require('visa2discord');
-
-  async function example() {
-    console.log('Before sleep');
-    await sleep(2000); // Sleep for 2000 milliseconds (2 seconds)
-    console.log('After sleep');
-  }
-
-  example();
-  ```
-
 ## passGen
 
 - The `passGen` function is used to generate a random password.
@@ -82,18 +61,6 @@ For your discord utilities
 
   ```
   Generated password: 5a2d3f
-  ```
-
-## AutoThreadJoiner
-
-- The `AutoThreadJoiner` function is used to automatically join threads.
-- Usage
-
-  ```js
-  const { Client } = require('discord.js');
-  const client = new Client({ intents: ['GUILDS', 'GUILD_MESSAGES', 'GUILD_MESSAGE_REACTIONS'] });
-  const { AutoThreadJoiner } = require('visa2discord');
-  AutoThreadJoiner(client) // Automatically join threads
   ```
 
 ## Clean Code
@@ -150,29 +117,6 @@ For your discord utilities
     ]
   ````
 
-## Discord Timestamp
-
-- The `discordTimestamp` function is used to generate a discord timestamp.
-- Usage
-
-  ```js
-  const { discordTimestamp } = require('visa2discord');
-  const time = Date.now(); // Current time
-  const type = 'f'; // type of timestamp
-
-  const timestamp = discordTimestamp(time, type);
-  console.log('Discord timestamp:', timestamp);
-  ```
-
-- Here are the types to use and their outputs on Discord:
-- `d` => 03/05/2023
-- `D` => March 5, 2023
-- `t` => 2:22 PM
-- `T` => 2:22:00 PM
-- `f` => March 5, 2023 2:22 PM
-- `F` => Sunday, March 5, 2023 2:22 PM
-- `R` => A minute ago
-
 ## Discord activity generator
 
 - The `generateActivity` function is used to generate a discord activity.
@@ -206,16 +150,8 @@ For your discord utilities
   - `letterleague` => Letter League
   - `watch` => Watch
 
-## Disable Buttons
-- The `disableButtons` function is used to disable all buttons in a message
-- Usage
-  ```js
-  const { disableButtons } = require('visa2discord');
-  const message = await channel.send({ content: 'This is a test message', components: [row] });
-  message.edit({ components: disableButtons(message) });
-  ```
-
 ## Transcripts
+
 - The `transcripts` function is used to generate a transcript of a Discord channel
 - <summary> Screenshots </summary>
   <details>
@@ -226,7 +162,7 @@ For your discord utilities
     Generated Transcript
     <img src="https://cdn.discordapp.com/attachments/1111682190573588551/1122858338338746498/image.png" alt="Generated Transcript" />
   </details>
-- Supports 
+- Supports
   - [x] Discord flavored markdown
   - [x] Embeds
   - [x] Replied messages
@@ -244,6 +180,7 @@ For your discord utilities
   - [ ] Stickers
 
 ### Methods
+
 - `quickExport`
   - The `quickExport` function generates a transcript of messages from a Discord channel. It takes the following parameters:
     - `channel` (required): The channel to export the transcript from.
@@ -252,6 +189,7 @@ For your discord utilities
     - `client` (optional): The Discord client used for fetching messages, if available.
   - The function returns a Promise that resolves to the exported transcript message. If an error occurs while generating the transcript, an Error is thrown.
   - Usage
+
     ```js
     const { AttachmentBuilder } = require('discord.js');
     const { quickExport } = require('visa2discord');
@@ -275,13 +213,14 @@ For your discord utilities
     - `support_dev` (optional): Whether to include developer support information in the transcript. Defaults to true.
   - The function returns a Promise that resolves to the exported chat transcript. If an error occurs while exporting the chat transcript, an Error is thrown.
   - Usage
+
     ```js
     const { AttachmentBuilder } = require('discord.js');
     const { exportChat } = require('visa2discord');
     const channel = client.channels.cache.get("channel_id") || message.channel;
     const transcript = await exportChat(channel);
     channel.send({ files: [new AttachmentBuilder(Buffer.from(transcript, 'utf-8'), { name: 'transcript.html'})] });
-    ``` 
+    ```
 
 - `rawExport`
   - The `rawExport` function exports the raw chat transcript from a Discord channel. It is an asynchronous function that returns a Promise. It takes the following parameters:
@@ -294,8 +233,9 @@ For your discord utilities
     - `fancy_times` (optional): Whether to use fancy formatting for timestamps. Defaults to true.
     - `support_dev` (optional): Whether to include developer support information in the transcript. Defaults to true.
 
-   - The function returns a Promise that resolves to the raw HTML content of the exported chat transcript. If an error occurs while exporting the chat transcript, an Error is thrown.
-   - Usage
+  - The function returns a Promise that resolves to the raw HTML content of the exported chat transcript. If an error occurs while exporting the chat transcript, an Error is thrown.
+  - Usage
+
     ```js
     const { AttachmentBuilder } = require('discord.js');
     const { rawExport } = require('visa2discord');
@@ -303,7 +243,7 @@ For your discord utilities
     const messages = await channel.messages.fetch({ limit: 100 });
     const transcript = await rawExport(channel, messages);
     channel.send({ files: [new AttachmentBuilder(Buffer.from(transcript, 'utf-8'), { name: 'transcript.html'})] });
-    ``` 
+    ```
 
 ### Classes
 
@@ -311,18 +251,23 @@ For your discord utilities
   - The `Transcript` class represents a chat transcript export and extends the `TranscriptDAO` class.
 
 ## Pretty Bytes
+
 - Formats a number of bytes into a human-readable string representation.
 - Usage
+
   ```js
   const { prettyBytes } = require('visa2discord');
   const bytes = 1000000000;
   const formatted = prettyBytes(bytes);
   console.log('Formatted bytes:', formatted);
   ```
+
   Example output
+
   ```
   Formatted bytes: 1 GB
   ```
+
 # Contributing
 
 - If you want to contribute to this project, you can fork this repository and make a pull request.
@@ -354,6 +299,7 @@ For your discord utilities
 # Changelogs
 
 - Moved to relases on github.com
+
 # End
 
 - Thanks for reading this readme.md file.

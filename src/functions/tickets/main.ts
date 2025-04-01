@@ -1,41 +1,48 @@
-const Discord = require('discord.js');
-const Transcript = require('./construct/transcript.js');
+import { Guild, Client, Message, GuildBasedChannel } from "discord.js";
+import Transcript from "./construct/transcript";
 
 /**
  * Exports a transcript of messages from a channel.
- * @param {Discord.Channel} channel - The channel to export the transcript from.
- * @param {Array} [messages=null] - Optional array of specific messages to include in the transcript.
- * @param {Discord.Guild} [guild=null] - The guild associated with the channel (if available).
- * @param {Discord.Client} [client=null] - The client client used for fetching messages (if available).
- * @returns {Promise<Discord.Message>} - A Promise that resolves to the exported transcript message.
+ * @param {Channel} channel - The channel to export the transcript from.
+ * @param {Array<Message>} [messages=null] - Optional array of specific messages to include in the transcript.
+ * @param {Guild} [guild=null] - The guild associated with the channel (if available).
+ * @param {Client} [client=null] - The client used for fetching messages (if available).
+ * @returns {Promise<Buffer | boolean>} - A Promise that resolves to the exported transcript buffer or false if the transcript is empty.
  */
-async function quickExport(channel, messages = null, guild = null, client = null) {
+async function quickExport(
+  channel: GuildBasedChannel,
+  messages: Message[] | null = null,
+  guild: Guild | null = null,
+  client: Client | null = null
+): Promise<Buffer | boolean> {
   if (guild) {
     channel.guild = guild;
   }
 
-  const transcript = (await new Transcript({
-    channel: channel,
-    limit: null,
-    messages: messages,
-    timezone: 'UTC',
-    military_time: true,
-    fancy_times: true,
-    before: null,
-    after: null,
-    support_dev: true,
-    client: client
-  }).export()).html;
+  const transcript = (
+    await new Transcript({
+      channel: channel,
+      limit: null,
+      messages: messages,
+      timezone: "UTC",
+      military_time: true,
+      fancy_times: true,
+      before: null,
+      after: null,
+      support_dev: true,
+      client: client,
+    }).export()
+  ).html;
   if (!transcript) {
-    return false
+    return false;
   } else {
-    return Buffer.from(transcript, 'utf-8')
+    return Buffer.from(transcript, "utf-8");
   }
 }
 
 /**
  * Export the chat transcript from a channel.
- * 
+ *
  * @async
  * @param {Channel} channel - The channel to export the chat from.
  * @param {number|null} [limit=null] - The maximum number of messages to export. Defaults to null (export all messages).
@@ -49,24 +56,23 @@ async function quickExport(channel, messages = null, guild = null, client = null
  * @param {boolean} [support_dev=true] - Whether to include developer support information in the transcript. Defaults to true.
  * @returns {Promise<TranscriptExport>} A Promise that resolves to the exported chat transcript.
  */
-
 async function exportChat(
-  channel,
-  limit = null,
-  tz_info = 'UTC',
-  guild = null,
-  client = null,
-  military_time = true,
-  fancy_times = true,
-  before = null,
-  after = null,
-  support_dev = true
+  channel: GuildBasedChannel,
+  limit: number | null = null,
+  tz_info: string = "UTC",
+  guild: Guild | null = null,
+  client: Client | null = null,
+  military_time: boolean = true,
+  fancy_times: boolean = true,
+  before: Date | null = null,
+  after: Date | null = null,
+  support_dev: boolean = true
 ) {
   if (guild) {
     channel.guild = guild;
   }
 
-  return (await new Transcript({
+  return await new Transcript({
     channel: channel,
     limit: limit,
     messages: null,
@@ -76,13 +82,13 @@ async function exportChat(
     before: before,
     after: after,
     support_dev: support_dev,
-    client: client
-  }).export());
+    client: client,
+  }).export();
 }
 
 /**
  * Export the raw chat transcript from a channel.
- * 
+ *
  * @async
  * @param {Channel} channel - The channel to export the chat from.
  * @param {Array<Message>} messages - The specific messages to include in the export.
@@ -94,53 +100,34 @@ async function exportChat(
  * @param {boolean} [support_dev=true] - Whether to include developer support information in the transcript. Defaults to true.
  * @returns {Promise<string>} A Promise that resolves to the raw HTML content of the exported chat transcript.
  */
-
 async function rawExport(
-  channel,
-  messages,
-  tz_info = 'UTC',
-  guild = null,
-  client = null,
-  military_time = false,
-  fancy_times = true,
-  support_dev = true
-) {
+  channel: GuildBasedChannel,
+  messages: Message[],
+  tz_info: string = "UTC",
+  guild: Guild | null = null,
+  client: Client | null = null,
+  military_time: boolean = false,
+  fancy_times: boolean = true,
+  support_dev: boolean = true
+): Promise<string> {
   if (guild) {
     channel.guild = guild;
   }
 
-  return (await new Transcript({
-    channel: channel,
-    limit: null,
-    messages: messages,
-    pytz_timezone: tz_info,
-    military_time: military_time,
-    fancy_times: fancy_times,
-    before: null,
-    after: null,
-    support_dev: support_dev,
-    client: client
-  }).export()).html;
+  return (
+    await new Transcript({
+      channel: channel,
+      limit: null,
+      messages: messages,
+      pytz_timezone: tz_info,
+      military_time: military_time,
+      fancy_times: fancy_times,
+      before: null,
+      after: null,
+      support_dev: support_dev,
+      client: client,
+    }).export()
+  ).html;
 }
 
-// async function quickLink(channel, message) {
-//   const embed = new discord.MessageEmbed()
-//     .setTitle('Transcript Link')
-//     .setDescription(`[Click here to view the transcript](${message.attachments[0].url})`)
-//     .setColor('#5865F2');
-
-//   return channel.send({ embeds: [embed] });
-// }
-
-// function generateLink(message) {
-//   return `https://mahto.id/chat-exporter?url=${message.attachments[0].url}`;
-// }
-
-module.exports = {
-  quickExport,
-  exportChat,
-  rawExport,
- // quickLink,
- // generateLink,
-  Transcript
-};
+export { quickExport, exportChat, rawExport, Transcript };

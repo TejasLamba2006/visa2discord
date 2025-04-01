@@ -4,10 +4,14 @@
  * @param {string} text - The text to be sanitized.
  * @returns {string} - The sanitized text.
  */
-module.exports = (text) => {
-  if (typeof text === "string")
+const cleanCode = (text: string): string => {
+  if (typeof text === "string") {
     return text
       .replace(/`/g, "`" + String.fromCharCode(8203))
       .replace(/@/g, "@" + String.fromCharCode(8203));
-  else return text;
+  } else {
+    return text;
+  }
 };
+
+export default cleanCode;

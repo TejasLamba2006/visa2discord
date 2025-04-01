@@ -1,7 +1,9 @@
-const os = require("os");
-const ParseMention = require("../parse/mention");
-const ParseMarkdown = require("../parse/markdown");
-const path = require("path");
+import ParseMentionFlow from "../parse/ParseMentionFlow";
+import ParseMarkdown from "../parse/ParseMarkdown";
+import * as path from "path";
+import * as fs from "fs";
+import { Guild } from "discord.js";
+
 const dir_path = path.join(path.dirname(path.resolve(__filename)), "..");
 
 const PARSE_MODE_NONE = 0;
@@ -12,23 +14,30 @@ const PARSE_MODE_SPECIAL_EMBED = 4;
 const PARSE_MODE_REFERENCE = 5;
 const PARSE_MODE_EMOJI = 6;
 
-async function fillOut(guild, base, replacements) {
-  for (const r of replacements) {
-    let [k, v, mode] = r;
+async function fillOut(
+  guild: Guild,
+  base: string,
+  replacements: [string, string, number][] | [string, string][]
+): Promise<string> {
+  for (let r of replacements) {
+    let k: string, v: string, mode: number;
     if (r.length === 2) {
-      r.push(PARSE_MODE_MARKDOWN);
+      [k, v] = r;
+      mode = PARSE_MODE_MARKDOWN;
+    } else {
+      [k, v, mode] = r;
     }
     if (mode === PARSE_MODE_MARKDOWN) {
-      v = await new ParseMention(v, guild).flow();
+      v = await new ParseMentionFlow(v, guild).flow();
       v = await new ParseMarkdown(v).standardMessageFlow();
     } else if (mode === PARSE_MODE_EMBED) {
-      v = await new ParseMention(v, guild).flow();
+      v = await new ParseMentionFlow(v, guild).flow();
       v = await new ParseMarkdown(v).standardEmbedFlow();
     } else if (mode === PARSE_MODE_SPECIAL_EMBED) {
-      v = await new ParseMention(v, guild).flow();
+      v = await new ParseMentionFlow(v, guild).flow();
       v = await new ParseMarkdown(v).specialEmbedFlow();
     } else if (mode === PARSE_MODE_REFERENCE) {
-      v = await new ParseMention(v, guild).flow();
+      v = await new ParseMentionFlow(v, guild).flow();
       v = await new ParseMarkdown(v).messageReferenceFlow();
     } else if (mode === PARSE_MODE_EMOJI) {
       v = await new ParseMarkdown(v).specialEmojiFlow();
@@ -40,8 +49,7 @@ async function fillOut(guild, base, replacements) {
   return base;
 }
 
-function read_file(filename) {
-  const fs = require("fs");
+function read_file(filename: string): string {
   return fs.readFileSync(filename, "utf-8");
 }
 
@@ -148,7 +156,7 @@ const channelSubject = read_file(
   path.join(dir_path, "/html/script/channel_subject.html")
 );
 
-module.exports = {
+export {
   fillOut,
   read_file,
   start_message,

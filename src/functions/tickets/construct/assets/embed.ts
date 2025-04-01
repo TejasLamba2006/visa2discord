@@ -1,4 +1,5 @@
-const {
+import { Guild, EmbedBuilder, Embed as DiscordEmbed } from "discord.js";
+import {
   fillOut,
   embed_body,
   embed_title,
@@ -15,11 +16,22 @@ const {
   PARSE_MODE_EMBED,
   PARSE_MODE_MARKDOWN,
   PARSE_MODE_SPECIAL_EMBED,
-} = require("../../ext/html_gen.js");
+} from "../../ext/htmlGen.js";
 
 class Embed {
-  constructor(embed, guild) {
-    this.embed = embed;
+  rawEmbed: DiscordEmbed;
+  embed: string;
+  guild: Guild;
+  title: string | null;
+  description: string | null;
+  author: string | null;
+  image: string | null;
+  thumbnail: string | null;
+  footer: string | null;
+  fields: string | null;
+
+  constructor(rawEmbed: DiscordEmbed, guild: Guild) {
+    this.rawEmbed = rawEmbed;
     this.guild = guild;
     this.title = null;
     this.description = null;
@@ -28,9 +40,10 @@ class Embed {
     this.thumbnail = null;
     this.footer = null;
     this.fields = null;
+    this.embed = "";
   }
 
-  async flow() {
+  async flow(): Promise<EmbedBuilder | string> {
     await this.build_title();
     await this.build_description();
     await this.build_fields();
@@ -42,10 +55,9 @@ class Embed {
     return this.embed;
   }
 
-
-  async build_title() {
-    if (this.embed.title) {
-      this.title = escapeHtml(this.embed.title);
+  async build_title(): Promise<void> {
+    if (this.rawEmbed.title) {
+      this.title = escapeHtml(this.rawEmbed.title);
       if (this.title) {
         this.title = await fillOut(this.guild, embed_title, [
           ["EMBED_TITLE", this.title, PARSE_MODE_MARKDOWN],
@@ -56,9 +68,9 @@ class Embed {
     }
   }
 
-  async build_description() {
-    if (this.embed.description) {
-      this.description = escapeHtml(this.embed.description);
+  async build_description(): Promise<void> {
+    if (this.rawEmbed.description) {
+      this.description = escapeHtml(this.rawEmbed.description);
       if (this.description) {
         this.description = await fillOut(this.guild, embed_description, [
           ["EMBED_DESC", this.description, PARSE_MODE_EMBED],
@@ -69,12 +81,12 @@ class Embed {
     }
   }
 
-  async build_fields() {
+  async build_fields(): Promise<void> {
     this.fields = "";
-    if (!this.embed.fields) {
+    if (!this.rawEmbed.fields) {
       return;
     }
-    for (const field of this.embed.fields) {
+    for (const field of this.rawEmbed.fields) {
       field.name = escapeHtml(field.name);
       field.value = escapeHtml(field.value);
       if (field.inline) {
@@ -91,16 +103,16 @@ class Embed {
     }
   }
 
-  async build_author() {
-    if (this.embed.author?.username) {
-      this.author = escapeHtml(this.embed.author.username);
-      if (this.embed.author.url) {
-        this.author = `<a class="chatlog__embed-author-name-link" href="${this.embed.author.url}">${this.author}</a>`;
+  async build_author(): Promise<void> {
+    if (this.rawEmbed.author?.name) {
+      this.author = escapeHtml(this.rawEmbed.author.name);
+      if (this.rawEmbed.author.url) {
+        this.author = `<a class="chatlog__embed-author-name-link" href="${this.rawEmbed.author.url}">${this.author}</a>`;
       }
-      const author_icon = this.embed.author.url
+      const author_icon = this.rawEmbed.author.iconURL
         ? await fillOut(this.guild, embed_author_icon, [
             ["AUTHOR", this.author, PARSE_MODE_NONE],
-            ["AUTHOR_ICON", this.embed.author.url, PARSE_MODE_NONE],
+            ["AUTHOR_ICON", this.rawEmbed.author.iconURL, PARSE_MODE_NONE],
           ])
         : "";
       if (author_icon === "" && this.author !== "") {
@@ -115,31 +127,35 @@ class Embed {
     }
   }
 
-  async build_image() {
-    if (this.embed.image?.url) {
+  async build_image(): Promise<void> {
+    if (this.rawEmbed.image?.url) {
       this.image = await fillOut(this.guild, embed_image, [
-        ["EMBED_IMAGE", this.embed.image.proxyURL, PARSE_MODE_NONE],
+        [
+          "EMBED_IMAGE",
+          this.rawEmbed.image.proxyURL ?? this.rawEmbed.image.url,
+          PARSE_MODE_NONE,
+        ],
       ]);
     } else {
       this.image = "";
     }
   }
 
-  async build_thumbnail() {
-    if (this.embed.thumbnail?.url) {
+  async build_thumbnail(): Promise<void> {
+    if (this.rawEmbed.thumbnail?.url) {
       this.thumbnail = await fillOut(this.guild, embed_thumbnail, [
-        ["EMBED_THUMBNAIL", this.embed.thumbnail.url, PARSE_MODE_NONE],
+        ["EMBED_THUMBNAIL", this.rawEmbed.thumbnail.url, PARSE_MODE_NONE],
       ]);
     } else {
       this.thumbnail = "";
     }
   }
 
-  async build_footer() {
-    if (this.embed.footer?.text) {
-      this.footer = escapeHtml(this.embed.footer.text);
-      const footer_icon = this.embed.footer?.icon
-        ? this.embed.footer.icon
+  async build_footer(): Promise<void> {
+    if (this.rawEmbed.footer?.text) {
+      this.footer = escapeHtml(this.rawEmbed.footer.text);
+      const footer_icon = this.rawEmbed.footer.iconURL
+        ? this.rawEmbed.footer.iconURL
         : null;
       if (!this.footer) {
         return;
@@ -159,26 +175,24 @@ class Embed {
     }
   }
 
-  async build_embed() {
+  async build_embed(): Promise<void> {
     this.embed = await fillOut(this.guild, embed_body, [
-      ["EMBED_COLOR", this.embed.hexColor],
-      ["EMBED_AUTHOR", this.author, PARSE_MODE_NONE],
-      ["EMBED_TITLE", this.title, PARSE_MODE_NONE],
-      ["EMBED_IMAGE", this.image, PARSE_MODE_NONE],
-      ["EMBED_THUMBNAIL", this.thumbnail, PARSE_MODE_NONE],
-      ["EMBED_DESC", this.description, PARSE_MODE_NONE],
-      ["EMBED_FIELDS", this.fields, PARSE_MODE_NONE],
-      ["EMBED_FOOTER", this.footer, PARSE_MODE_NONE],
+      ["EMBED_COLOR", this.rawEmbed.hexColor ?? "", PARSE_MODE_MARKDOWN],
+      ["EMBED_AUTHOR", this.author ?? "", PARSE_MODE_NONE],
+      ["EMBED_TITLE", this.title ?? "", PARSE_MODE_NONE],
+      ["EMBED_IMAGE", this.image ?? "", PARSE_MODE_NONE],
+      ["EMBED_THUMBNAIL", this.thumbnail ?? "", PARSE_MODE_NONE],
+      ["EMBED_DESC", this.description ?? "", PARSE_MODE_NONE],
+      ["EMBED_FIELDS", this.fields ?? "", PARSE_MODE_NONE],
+      ["EMBED_FOOTER", this.footer ?? "", PARSE_MODE_NONE],
     ]);
   }
 }
 
-module.exports = {
-  Embed,
-};
+export { Embed };
 
-function escapeHtml(text) {
-  const map = {
+function escapeHtml(text: string): string {
+  const map: { [key: string]: string } = {
     "&": "&amp;",
     "<": "&lt;",
     ">": "&gt;",

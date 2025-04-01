@@ -1,9 +1,6 @@
-const twemoji = require("twemoji");
-const cdnFmt =
-  "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/{codepoint}.png";
+import twemoji from "twemoji";
 
-
-async function convertEmoji(string) {
+async function convertEmoji(string: string): Promise<string> {
   const regex = /<:[^:]+:(\d{16})>|([\uD800-\uDBFF][\uDC00-\uDFFF])/g;
   return string.replace(regex, (match, emojiId, defaultEmoji) => {
     if (emojiId) {
@@ -13,9 +10,6 @@ async function convertEmoji(string) {
       return `<img src="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/${codepoints}.svg" height="20px" width="20px" />`;
     }
   });
-
 }
 
-module.exports = {
-  convertEmoji
-};
+export { convertEmoji };

@@ -11,18 +11,30 @@
  * @throws {RangeError} - If a single part exceeds the length limit.
  */
 
-module.exports = function splitMessageRegex(
-  text,
-  { maxLength = 2_000, regex = /\n/g, prepend = "", append = "" } = {}
-) {
+interface SplitMessageOptions {
+  maxLength?: number;
+  regex?: RegExp;
+  prepend?: string;
+  append?: string;
+}
+
+const splitMessageRegex = (
+  text: string,
+  {
+    maxLength = 2000,
+    regex = /\n/g,
+    prepend = "",
+    append = "",
+  }: SplitMessageOptions = {}
+): string[] => {
   if (text.length <= maxLength) return [text];
-  const parts = [];
+  const parts: string[] = [];
   let curPart = prepend;
   let chunkStartIndex = 0;
 
   let prevDelim = "";
 
-  function addChunk(chunkEndIndex, nextDelim) {
+  const addChunk = (chunkEndIndex: number, nextDelim: string) => {
     const nextChunk = text.substring(chunkStartIndex, chunkEndIndex);
     const nextChunkLen = nextChunk.length;
 
@@ -47,7 +59,7 @@ module.exports = function splitMessageRegex(
     }
     prevDelim = nextDelim;
     chunkStartIndex = chunkEndIndex + prevDelim.length;
-  }
+  };
 
   for (const match of text.matchAll(regex)) {
     addChunk(match.index, match[0]);
@@ -56,3 +68,5 @@ module.exports = function splitMessageRegex(
   parts.push(curPart + append);
   return parts;
 };
+
+export default splitMessageRegex;

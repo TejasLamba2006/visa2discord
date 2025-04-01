@@ -9,7 +9,16 @@
  * @returns {string} The formatted byte size string.
  */
 
-module.exports = (bytes, options = {}) => {
+interface PrettyBytesOptions {
+  bits?: boolean;
+  signed?: boolean;
+  locale?: "en" | "de";
+}
+
+const prettyBytes = (
+  bytes: number,
+  options: PrettyBytesOptions = {}
+): string => {
   const { bits = false, signed = false, locale = "en" } = options;
 
   const units = bits
@@ -34,3 +43,5 @@ module.exports = (bytes, options = {}) => {
 
   return (isNegative ? "-" : "") + formattedValue + " " + units[exponent];
 };
+
+export default prettyBytes;
