@@ -457,7 +457,7 @@ class MessageConstruct {
       icon = DiscordUtils.interaction_command_icon;
     }
 
-    const [_, messageEditedAt] = this.set_time(message);
+    let [_, messageEditedAt] = this.set_time(message);
 
     if (messageEditedAt) {
       messageEditedAt = this.setEditAt(messageEditedAt);
