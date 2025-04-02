@@ -19,7 +19,7 @@ import {
   PARSE_MODE_EMOJI,
 } from "../../ext/htmlGen.js";
 
-class Component {
+export default class Component {
   static readonly styles: { [key: string]: string } = {
     Primary: "#5865F2",
     Secondary: "#4F545C",
@@ -51,11 +51,11 @@ class Component {
   async buildButton(c: ButtonComponent): Promise<string> {
     if (c.data.style === ButtonStyle.Premium) return "";
     const { style, disabled, label = "", emoji = null } = c.data;
-    const url = "url" in c.data ? c.data.url : null;
-
-    // Validate style and ensure it's one of the expected types
-    if (!Object.values(ButtonStyle).includes(style)) {
-      throw new Error(`Invalid button style: ${style}`);
+    let url = "javascript:;";
+    let target = "";
+    if ("url" in c.data && !c.data.url) {
+      url = c.data.url;
+      target = " target='_blank'";
     }
 
     // Determine icon and emoji HTML
@@ -78,6 +78,7 @@ class Component {
       ["LABEL", label, PARSE_MODE_MARKDOWN],
       ["EMOJI", emojiHtml, PARSE_MODE_EMOJI],
       ["ICON", icon, PARSE_MODE_NONE],
+      ["TARGET", target, PARSE_MODE_NONE],
       ["STYLE", Component.styles[ButtonStyle[style]], PARSE_MODE_NONE],
     ]);
 
@@ -164,5 +165,3 @@ class Component {
     return menus + buttons;
   }
 }
-
-export { Component };

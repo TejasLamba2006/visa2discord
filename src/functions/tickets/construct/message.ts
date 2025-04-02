@@ -1,17 +1,24 @@
-import Discord, { Guild, Message } from "discord.js";
+import {
+  Collection,
+  Guild,
+  GuildMember,
+  Message,
+  MessageType,
+  User,
+  UserFlags,
+} from "discord.js";
 import moment from "moment-timezone";
 import { DiscordUtils } from "../ext/discordUtils.js";
-import { Attachment } from "./assets/attachment.js";
-import { Embed } from "./assets/embed.js";
-import { Reaction } from "./assets/reaction.js";
-import { Component } from "./assets/components.js";
+import Attachment from "./assets/attachment.js";
+import Embed from "./assets/embed.js";
+import Reaction from "./assets/reaction.js";
+import Component from "./assets/components.js";
 import {
   bot_tag,
   bot_tag_verified,
   message_body,
   message_pin,
   message_thread,
-  message_content,
   message_reference,
   message_reference_unknown,
   message_interaction,
@@ -23,7 +30,7 @@ import {
   PARSE_MODE_REFERENCE,
   fillOut,
 } from "../ext/htmlGen.js";
-import cache from "../ext/cache.js";
+//import cache from "../ext/cache.js";
 
 type MetaData = {
   [key: string]: [string, Date, string, string, number, Date | null, string];
@@ -36,6 +43,8 @@ class MessageConstruct {
   components = "";
   attachments = "";
   time_format = "";
+  reference = "";
+  interaction = "";
 
   message: Message;
   previous_message: Message | null;
@@ -70,7 +79,7 @@ class MessageConstruct {
   }
 
   async construct_message(): Promise<[string, MetaData]> {
-    if (this.message.type === Discord.MessageType.ChannelPinnedMessage) {
+    if (this.message.type === MessageType.ChannelPinnedMessage) {
       await this.build_pin();
     } else if (this.message.thread) {
       await this.build_message();
@@ -94,8 +103,8 @@ class MessageConstruct {
   _generate_message_divider_check(): boolean {
     return (
       !this.previous_message ||
-      this.message.reference !== "" ||
-      this.message.interaction !== "" ||
+      this.message.reference !== null ||
+      this.message.interaction !== null ||
       this.previous_message.author?.id !== this.message.author.id ||
       this.message.webhookId !== null ||
       this.message.createdTimestamp >
@@ -198,7 +207,7 @@ class MessageConstruct {
     await this.build_pin_template();
   }
 
-  async _gather_user_colour(author: Discord.User): Promise<string> {
+  async _gather_user_colour(author: User): Promise<string> {
     const member = await this._gather_member(author);
     const user_colour =
       member && member.displayHexColor !== "#000000"
@@ -207,9 +216,7 @@ class MessageConstruct {
     return `color: ${user_colour};`;
   }
 
-  async _gather_member(
-    author: Discord.User
-  ): Promise<Discord.GuildMember | null> {
+  async _gather_member(author: User): Promise<GuildMember | null> {
     let member = this.guild.members.cache.get(author.id);
 
     if (member) {
@@ -227,8 +234,16 @@ class MessageConstruct {
   async build_pin_template(): Promise<void> {
     this.message_html += await fillOut(this.guild, message_pin, [
       ["PIN_URL", DiscordUtils.pinned_message_icon, PARSE_MODE_NONE],
-      ["USER_COLOUR", await this._gather_user_colour(this.message.author)],
-      ["NAME", String(escapeHtml(this.message.author.username))],
+      [
+        "USER_COLOUR",
+        await this._gather_user_colour(this.message.author),
+        PARSE_MODE_MARKDOWN,
+      ],
+      [
+        "NAME",
+        String(escapeHtml(this.message.author.username)),
+        PARSE_MODE_MARKDOWN,
+      ],
       ["NAME_TAG", `${this.message.author.username}`, PARSE_MODE_NONE],
       ["MESSAGE_ID", this.message.id, PARSE_MODE_NONE],
       [
@@ -243,8 +258,16 @@ class MessageConstruct {
     this.message_html += await fillOut(this.guild, message_thread, [
       ["THREAD_URL", DiscordUtils.thread_channel_icon, PARSE_MODE_NONE],
       ["THREAD_NAME", this.message.thread?.name ?? "", PARSE_MODE_NONE],
-      ["USER_COLOUR", await this._gather_user_colour(this.message.author)],
-      ["NAME", escapeHtml(this.message.author.username).toString()],
+      [
+        "USER_COLOUR",
+        await this._gather_user_colour(this.message.author),
+        PARSE_MODE_MARKDOWN,
+      ],
+      [
+        "NAME",
+        escapeHtml(this.message.author.username).toString(),
+        PARSE_MODE_MARKDOWN,
+      ],
       ["NAME_TAG", `${this.message.author.username}`, PARSE_MODE_NONE],
       ["MESSAGE_ID", this.message.id.toString(), PARSE_MODE_NONE],
     ]);
@@ -255,7 +278,7 @@ class MessageConstruct {
     await this.build_thread_template();
   }
 
-  async _gather_user_icon(author: Discord.User): Promise<string> {
+  async _gather_user_icon(author: User): Promise<string> {
     const member = await this._gather_member(author);
 
     if (!member) {
@@ -268,8 +291,8 @@ class MessageConstruct {
     return "";
   }
 
-  _gather_user_bot(author: Discord.User): string {
-    if (author.bot && author.flags?.has(Discord.UserFlags.VerifiedBot)) {
+  _gather_user_bot(author: User): string {
+    if (author.bot && author.flags?.has(UserFlags.VerifiedBot)) {
       return bot_tag_verified;
     } else if (author.bot) {
       return bot_tag;
@@ -291,7 +314,7 @@ class MessageConstruct {
       const user_joined_at =
         this.guild.members.cache.get(this.message.author.id)?.joinedAt || null;
       const user_display_name =
-        this.message.author.username !== this.message.author.username
+        this.message.author.displayName !== this.message.author.username
           ? `<div class="meta__display-name">${this.message.author.username}</div>`
           : "";
       this.meta_data[user_id] = [
@@ -329,8 +352,8 @@ class MessageConstruct {
   }
 
   async build_reference(): Promise<void> {
-    if (!this.message.reference) {
-      this.message.reference = "";
+    if (!this.message.reference?.messageId) {
+      this.reference = "";
       return;
     }
     let message;
@@ -338,10 +361,10 @@ class MessageConstruct {
       message = await this.message.channel.messages.fetch(
         this.message.reference.messageId
       );
-    } catch (error) {
-      this.message.reference = "";
+    } catch (error: any) {
+      this.reference = "";
       if (error.code === 10008) {
-        this.message.reference = message_reference_unknown;
+        this.reference = message_reference_unknown;
       }
       return;
     }
@@ -382,11 +405,15 @@ class MessageConstruct {
 
     const avatarUrl =
       message.author.displayAvatarURL() || DiscordUtils.default_avatar;
-    this.message.reference = await fillOut(this.guild, message_reference, [
+    this.reference = await fillOut(this.guild, message_reference, [
       ["AVATAR_URL", String(avatarUrl), PARSE_MODE_NONE],
       ["BOT_TAG", isBot, PARSE_MODE_NONE],
       ["NAME_TAG", `${message.author.username}`, PARSE_MODE_NONE],
-      ["NAME", String(escapeHtml(message.author.username))],
+      [
+        "NAME",
+        String(escapeHtml(message.author.username)),
+        PARSE_MODE_MARKDOWN,
+      ],
       ["USER_COLOUR", userColour, PARSE_MODE_NONE],
       ["CONTENT", message.content, PARSE_MODE_REFERENCE],
       ["EDIT", messageEditedAt, PARSE_MODE_NONE],
@@ -398,7 +425,7 @@ class MessageConstruct {
 
   async build_interaction(): Promise<void> {
     if (!this.message.interaction) {
-      this.message.interaction = "";
+      this.interaction = "";
       return;
     }
 
@@ -406,7 +433,7 @@ class MessageConstruct {
     const isBot = this._gather_user_bot(user);
     const userColour = await this._gather_user_colour(user);
     const avatarUrl = user.displayAvatarURL() || DiscordUtils.default_avatar;
-    this.message.interaction = await fillOut(this.guild, message_interaction, [
+    this.interaction = await fillOut(this.guild, message_interaction, [
       ["AVATAR_URL", avatarUrl, PARSE_MODE_NONE],
       ["BOT_TAG", isBot, PARSE_MODE_NONE],
       ["NAME_TAG", `${user.username}`, PARSE_MODE_NONE],
@@ -526,7 +553,7 @@ async function convertMessageToHTML(
 }
 
 async function gatherMessages(
-  messages: Message[],
+  messages: Collection<string, Message> | null,
   guild: Guild,
   pytz_timezone: string,
   military_time: boolean
@@ -534,9 +561,12 @@ async function gatherMessages(
   let message_html = "";
   let meta_data: MetaData = {};
   let previous_message: Message | null = null;
+  if (!messages) {
+    return ["", {}];
+  }
   for (const message of messages) {
     const messageConstruct = new MessageConstruct(
-      message,
+      message[1],
       previous_message,
       pytz_timezone,
       military_time,
@@ -548,7 +578,7 @@ async function gatherMessages(
       await messageConstruct.construct_message();
 
     message_html += content_html;
-    previous_message = message;
+    previous_message = message[1];
     meta_data = updated_meta_data;
   }
 

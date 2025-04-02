@@ -18,7 +18,7 @@ import {
   PARSE_MODE_SPECIAL_EMBED,
 } from "../../ext/htmlGen.js";
 
-class Embed {
+export default class Embed {
   rawEmbed: DiscordEmbed;
   embed: string;
   guild: Guild;
@@ -188,8 +188,6 @@ class Embed {
     ]);
   }
 }
-
-export { Embed };
 
 function escapeHtml(text: string): string {
   const map: { [key: string]: string } = {

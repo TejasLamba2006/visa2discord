@@ -9,7 +9,7 @@ import {
   PARSE_MODE_NONE,
 } from "../../ext/htmlGen.js";
 
-class Attachment {
+export default class Attachment {
   attachments: string;
   rawAttachments: DiscordAttachment;
   guild: Guild;
@@ -59,7 +59,7 @@ class Attachment {
     const file_size = this.get_file_size(this.rawAttachments.size);
     this.attachments = await fillOut(this.guild, audio_attachment, [
       ["ATTACH_ICON", file_icon, PARSE_MODE_NONE],
-      ["ATTACH_URL", this.rawAttachments.url, PARSE_MODE_NONE],
+      ["ATTACH_URL", this.rawAttachments.proxyURL, PARSE_MODE_NONE],
       ["ATTACH_BYTES", file_size, PARSE_MODE_NONE],
       ["ATTACH_AUDIO", this.rawAttachments.proxyURL, PARSE_MODE_NONE],
       ["ATTACH_FILE", this.rawAttachments.name, PARSE_MODE_NONE],
@@ -161,5 +161,3 @@ class Attachment {
     }
   }
 }
-
-export { Attachment };

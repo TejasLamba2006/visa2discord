@@ -7,7 +7,7 @@ import {
   PARSE_MODE_NONE,
 } from "../../ext/htmlGen.js";
 
-class Reaction {
+export default class Reaction {
   rawReaction: MessageReaction;
   reaction: string;
   guild: Guild;
@@ -52,5 +52,3 @@ class Reaction {
     ]);
   }
 }
-
-export { Reaction };

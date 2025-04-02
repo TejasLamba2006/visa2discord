@@ -164,8 +164,10 @@ abstract class TranscriptDAO {
     let _fancy_time = "";
 
     if (this.fancy_times) {
+      const time_format = this.military_time ? "HH:mm" : "hh:mm A";
       _fancy_time = await fillOut(this.channel.guild, fancyTime, [
         ["TIMEZONE", this.timezone, PARSE_MODE_NONE],
+        ["TIME_FORMAT", time_format, PARSE_MODE_NONE],
       ]);
     }
     this.html = await fillOut(this.channel.guild, total, [

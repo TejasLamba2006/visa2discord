@@ -2,16 +2,19 @@ import { convertEmoji } from "../ext/emojiConvert";
 
 class ParseMarkdown {
   content: string;
+  code_blocks_content: string[];
 
   constructor(content: string) {
     this.content = content;
+    this.code_blocks_content = [];
   }
 
   async standardMessageFlow(): Promise<string> {
-    this.httpsHttpLinks();
     this.parseCodeBlockMarkdown();
+    this.httpsHttpLinks();
     this.parseNormalMarkdown();
     await this.parseEmoji();
+    this.reverseCodeBlockMarkdown();
 
     return this.content;
   }
@@ -23,28 +26,31 @@ class ParseMarkdown {
   }
 
   async standardEmbedFlow(): Promise<string> {
+    this.parseCodeBlockMarkdown();
     this.httpsHttpLinks();
     this.parseEmbedMarkdown();
     this.parseNormalMarkdown();
-    this.parseCodeBlockMarkdown();
     await this.parseEmoji();
+    this.reverseCodeBlockMarkdown();
 
     return this.content;
   }
 
   async specialEmbedFlow(): Promise<string> {
     this.httpsHttpLinks();
-    this.parseNormalMarkdown();
     this.parseCodeBlockMarkdown();
+    this.parseNormalMarkdown();
     await this.parseEmoji();
+    this.reverseCodeBlockMarkdown();
 
     return this.content;
   }
 
   async messageReferenceFlow(): Promise<string> {
     this.httpsHttpLinks();
-    this.parseNormalMarkdown();
     this.parseCodeBlockMarkdown({ reference: true });
+    this.parseNormalMarkdown();
+    this.reverseCodeBlockMarkdown();
     await this.parseEmoji();
     this.parseBr();
 
@@ -94,6 +100,7 @@ class ParseMarkdown {
   }
 
   parseNormalMarkdown(): void {
+    this.orderListMarkdownToHtml();
     const holder: [RegExp, string][] = [
       [/__([^_]+)__/g, '<span style="text-decoration: underline">$1</span>'],
       [/\*\*([^*]+)\*\*/g, "<strong>$1</strong>"],
@@ -103,6 +110,9 @@ class ParseMarkdown {
         /\|\|([^\|]+)\|\|/g,
         '<span class="spoiler spoiler--hidden" onclick="showSpoiler(event, this)"> <span class="spoiler-text">$1</span></span>',
       ],
+      [/^###\s(.*?)\n/, "<h3>$1</h3>"],
+      [/^##\s(.*?)\n/, "<h2>$1</h2>"],
+      [/^#\s(.*?)\n/, "<h1>$1</h1>"],
     ];
 
     const codeRegex = /<code>(.*?)<\/code>/gs;
@@ -245,19 +255,64 @@ class ParseMarkdown {
       '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
     );
   }
+  orderListMarkdownToHtml(): void {
+    const lines = this.content.split("\n");
+    let html = "";
+    const indentStack: number[] = [0];
+    let started = true;
+
+    for (const line of lines) {
+      const match = line.match(/^(\s*)([-*])\s+(.+)$/);
+      if (match) {
+        let [_, i, __, content] = match;
+        const indent = i.length;
+
+        if (started) {
+          html +=
+            '<ul class="markup" style="padding-left: 20px;margin: 0 !important">\n';
+          started = false;
+        }
+        if (indent % 2 === 0) {
+          while (indent < indentStack[indentStack.length - 1]) {
+            html += "</ul>\n";
+            indentStack.pop();
+          }
+          if (indent > indentStack[indentStack.length - 1]) {
+            html += '<ul class="markup">\n';
+            indentStack.push(indent);
+          }
+        } else {
+          while (indent + 1 < indentStack[indentStack.length - 1]) {
+            html += "</ul>\n";
+            indentStack.pop();
+          }
+          if (indent + 1 > indentStack[indentStack.length - 1]) {
+            html += '<ul class="markup">\n';
+            indentStack.push(indent + 1);
+          }
+        }
+
+        html += `<li class="markup">${content.trim()}</li>\n`;
+      } else {
+        while (indentStack.length > 1) {
+          html += "</ul>";
+          indentStack.pop();
+        }
+        if (!started) {
+          html += "</ul>";
+          started = true;
+        }
+        html += line + "\n";
+      }
+    }
+
+    while (indentStack.length > 1) {
+      html += "</ul>\n";
+      indentStack.pop();
+    }
+
+    this.content = html;
+  }
 }
 
 export default ParseMarkdown;
-
-function escapeHtml(text: string): string {
-  const map: { [key: string]: string } = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;",
-  };
-  return text.replace(/[&<>"']/g, function (m) {
-    return map[m];
-  });
-}
